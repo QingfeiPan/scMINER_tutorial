@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 4 Footnotes and citations | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
+  <title>Chapter 1 Introduction | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
   <meta name="description" content="A tutorial of scMINER" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 4 Footnotes and citations | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta property="og:title" content="Chapter 1 Introduction | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A tutorial of scMINER" />
   <meta name="github-repo" content="QingfeiPan/scMINER_qpan" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 4 Footnotes and citations | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta name="twitter:title" content="Chapter 1 Introduction | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   
   <meta name="twitter:description" content="A tutorial of scMINER" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="data-intake.html"/>
-<link rel="next" href="blocks.html"/>
+<link rel="prev" href="index.html"/>
+<link rel="next" href="get-started.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -211,34 +211,49 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="footnotes-and-citations" class="section level1 hasAnchor" number="4">
-<h1><span class="header-section-number">Chapter 4</span> Footnotes and citations<a href="footnotes-and-citations.html#footnotes-and-citations" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<div id="footnotes" class="section level2 hasAnchor" number="4.1">
-<h2><span class="header-section-number">4.1</span> Footnotes<a href="footnotes-and-citations.html#footnotes" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Footnotes are put inside the square brackets after a caret <code>^[]</code>. Like this one <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>.</p>
+<div id="introduction" class="section level1 hasAnchor" number="1">
+<h1><span class="header-section-number">Chapter 1</span> Introduction<a href="introduction.html#introduction" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>This chapter will introduce</p>
+<div id="a-few-concepts" class="section level2 hasAnchor" number="1.1">
+<h2><span class="header-section-number">1.1</span> A few concepts<a href="introduction.html#a-few-concepts" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>There are a few concepts that may help you understand scMINER better.</p>
+<div id="sparseeset" class="section level3 unnumbered hasAnchor">
+<h3>SparseEset<a href="introduction.html#sparseeset" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 </div>
-<div id="citations" class="section level2 hasAnchor" number="4.2">
-<h2><span class="header-section-number">4.2</span> Citations<a href="footnotes-and-citations.html#citations" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Reference items in your bibliography file(s) using <code>@key</code>.</p>
-<p>For example, we are using the <strong>bookdown</strong> package <span class="citation">[@R-bookdown]</span> (check out the last code chunk in index.Rmd to see how this citation key was added) in this sample book, which was built on top of R Markdown and <strong>knitr</strong> <span class="citation">[@xie2015]</span> (this citation was added manually in an external file book.bib).
-Note that the <code>.bib</code> files need to be listed in the index.Rmd with the YAML <code>bibliography</code> key.</p>
-<p>The RStudio Visual Markdown Editor can also make it easier to insert citations: <a href="https://rstudio.github.io/visual-markdown-editing/#/citations" class="uri">https://rstudio.github.io/visual-markdown-editing/#/citations</a></p>
+<div id="mutual-information" class="section level3 unnumbered hasAnchor">
+<h3>Mutual Information<a href="introduction.html#mutual-information" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+</div>
+<div id="gene-activity" class="section level3 unnumbered hasAnchor">
+<h3>Gene Activity<a href="introduction.html#gene-activity" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+</div>
+</div>
+<div id="why-use-scminer" class="section level2 hasAnchor" number="1.2">
+<h2><span class="header-section-number">1.2</span> Why use scMINER<a href="introduction.html#why-use-scminer" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>(more deteils to be added)</p>
+<p>scMINER includes the following key functions:</p>
+<ul>
+<li><p><strong>Mutual information-based clustering</strong>: scMINER measures the cell-cell similarities with <strong>full feature-derived mutual information</strong>. It can catch both linear and non-linear correlations and performs better in cell clustering, especially for those of close states.</p></li>
+<li><p><strong>Gene activity estimation</strong>: scMINER rewires the cell-type specific gene networks solely from the scRNA-seq data, and then estimates the gene activities of not only <strong>transcription factors (TFs)</strong> but also <strong>signaling genes (SIGs)</strong>. The gene activity-based analysis can expose the <strong>main regulators of various biological activities</strong>, like cellular linage differentiation and tissue specificity.</p></li>
+<li><p><strong>SparseEset-centered full-feature tool</strong>: scMINER provides a wide range of functions for <strong>data intake</strong>, <strong>quality control and filtration</strong>, <strong>MI-based clustering</strong>, <strong>network inference</strong>, <strong>gene activity estimation</strong>, <strong>cell type annotation</strong>, <strong>differential expression/activity analysis</strong>, and <strong>data visualization and sharing</strong>. Most of these functions are developed in an object-oriented manner for the <strong>SparseEset object</strong>.</p></li>
+</ul>
+</div>
+<div id="citation" class="section level2 hasAnchor" number="1.3">
+<h2><span class="header-section-number">1.3</span> Citation<a href="introduction.html#citation" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Please consider citing <a href="https://www.biorxiv.org/content/10.1101/2023.01.26.523391v1">this paper</a> if you find scMINER useful in your research.</p>
+</div>
+<div id="support" class="section level2 hasAnchor" number="1.4">
+<h2><span class="header-section-number">1.4</span> Support<a href="introduction.html#support" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>We welcome your feedback! The scMINER software is developed and maintained by the <a href="https://www.stjude.org/research/labs/yu-lab.html">Yu Lab @ St. Jude Children’s Research Hospital</a> and is released under the Apache License (Version 2.0). Feel free to open an <a href="https://github.com/jyyulab/scMINER/issues">issue</a>, or send us an <a href="mailto:jiyang.yu@stjude.org">email</a> if you encounter a bug, need our help or just want to make a comment/suggestion.</p>
 
 </div>
-</div>
-<div class="footnotes">
-<hr />
-<ol start="1">
-<li id="fn1"><p>This is a footnote.<a href="footnotes-and-citations.html#fnref1" class="footnote-back">↩︎</a></p></li>
-</ol>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="data-intake.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="blocks.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="get-started.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -269,7 +284,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/04-citations.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/01-introduction.Rmd",
 "text": "Edit"
 },
 "history": {
