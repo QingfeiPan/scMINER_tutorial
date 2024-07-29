@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Page not found | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
+  <title>Chapter 5 Data filtration | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
   <meta name="description" content="A tutorial of scMINER" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Page not found | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta property="og:title" content="Chapter 5 Data filtration | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A tutorial of scMINER" />
   <meta name="github-repo" content="QingfeiPan/scMINER_qpan" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Page not found | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta name="twitter:title" content="Chapter 5 Data filtration | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   
   <meta name="twitter:description" content="A tutorial of scMINER" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-
-
+<link rel="prev" href="create-sparseeset-object.html"/>
+<link rel="next" href="data-normalization.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -251,19 +251,98 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="page-not-found" class="section level1">
-<h1>Page not found</h1>
-<p>The page you requested cannot be found (perhaps it was moved or renamed).</p>
-<p>You may want to try searching to find the page's new location, or use
-the table of contents to find the page you are looking for.</p>
+<div id="data-filtration" class="section level1 hasAnchor" number="5">
+<h1><span class="header-section-number">Chapter 5</span> Data filtration<a href="data-filtration.html#data-filtration" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>In this chapter, we will introduce you how scMINER assess the scRNA-seq data quality, estimate the cutoffs for data filtration, and remove the cells and features of low quality from the SparseEset object.
+## QC metrics in scMINER</p>
+<p>As we mentioned before, scMINER can automatically generate 5 meta data statistics and add them to the SparseEset object. These 5 meta data statistics are the metrics scMINER uses to assess the quality of cells and features:</p>
+<ul>
+<li><p>For cell quality assessment, scMINER provides 4 metrics that <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4758103/pdf/13059_2016_Article_888.pdf">commonly used by the community</a>:</p>
+<ul>
+<li><strong>nUMI</strong>: number of total UMIs in each cell. Cells with abnormally high nUMI usually indicate doublets, while those with abnormally low nUMI usually indicate poorly sequenced cells or empty droplets.</li>
+<li><strong>nFeature</strong>: number of expressed features/genes in each cell. Similar to nUMI.</li>
+<li><strong>pctMito</strong>: percentage of UMIs of mitochondrial genes (defined by “mt-|MT-”) in each cell. Cells with aberrantly high pctMito usually indicate dying cells.</li>
+<li><strong>pctSpikeIn</strong>: percentage of UMIs of spike-in RNAs (defined by “ERCC-|Ercc-”)) in each cell. This is used to estimate the normalization factor. Cells with extremely high or low pctSpikeIn need to be removed.</li>
+</ul></li>
+<li><p>For feature quality assessment, scMINER provides one metrics:</p>
+<ul>
+<li><strong>nCell</strong>: number of cells expressing the features/genes. Genes with extremely low nCell are poorly sequenced and are usually of low variance.</li>
+</ul></li>
+</ul>
+<div id="qc-report" class="section level2 hasAnchor" number="5.1">
+<h2><span class="header-section-number">5.1</span> QC report<a href="data-filtration.html#qc-report" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>To help assess the data quality and determine the cutoffs for data filtration, scMINER provides a function, <code>drawSparseEsetQC()</code>, to generate a html-format quality control report:</p>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="data-filtration.html#cb60-1" tabindex="-1"></a><span class="do">## To generate the </span></span>
+<span id="cb60-2"><a href="data-filtration.html#cb60-2" tabindex="-1"></a><span class="fu">drawSparseEsetQC</span>(<span class="at">input_eset =</span> pbmc14k_raw.eset, <span class="at">output_html_file =</span> <span class="st">&quot;/your-path/PBMC14k/PLOT/pbmc14k_rawCount.html&quot;</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb60-3"><a href="data-filtration.html#cb60-3" tabindex="-1"></a></span>
+<span id="cb60-4"><a href="data-filtration.html#cb60-4" tabindex="-1"></a><span class="do">## scMINER supports group-specific QC highlights</span></span>
+<span id="cb60-5"><a href="data-filtration.html#cb60-5" tabindex="-1"></a><span class="fu">drawSparseEsetQC</span>(<span class="at">input_eset =</span> pbmc14k_raw.eset, <span class="at">output_html_file =</span> <span class="st">&quot;/your-path/PBMC14k/PLOT/pbmc14k_rawCount.html&quot;</span>, <span class="at">overwrite =</span> <span class="cn">FALSE</span>, <span class="at">group_by =</span> <span class="st">&quot;true_label&quot;</span>)</span></code></pre></div>
+<p>The quality control report consists of 4 parts:</p>
+<ul>
+<li><strong>Key Statistics</strong>: it highlights 5 key statistics of given eset object, including number of cells, number of genes, mean of genes per cell, mean of UMIs per cell and mean of cells per gene.</li>
+<li><strong>Detailed statistics of key metrics</strong>: it summarizes and visualizes the detailed statistics of 5 key metrics that scMINER uses for filtration: nUMI, nFeature, pctMito, pctSpikeIn, nCell.</li>
+<li><strong>Detailed statistics per cell and gene</strong>: it lists the detailed statistics of each gene and cell.</li>
+<li><strong>Filtration cutoffs by scMINER</strong>: it provides the cutoffs estimated automatically by scMINER based on Median ± 3 * MAD (maximum absolute deviance), and the pseudo-filtration statistics on both genes and cells with these cutoffs.</li>
+</ul>
+</div>
+<div id="filter-the-sparse-eset-object" class="section level2 hasAnchor" number="5.2">
+<h2><span class="header-section-number">5.2</span> Filter the sparse eset object<a href="data-filtration.html#filter-the-sparse-eset-object" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>From the quality control report generated above, we have got a better sense about the data quality and the cutoffs to use for filtration. scMINER provides a function, filterSparseEset() for this purpose, and it can work in two modes:</p>
+<ul>
+<li><strong><code>auto</code></strong>: in this mode, scMINER will use the cutoffs estimated by Median ± 3*MAD (maximum absolute deviation). Based on our tests, in most cases, this mode works well with the matrix of both raw UMI counts and TPM values.</li>
+<li><strong><code>manual</code></strong>: in this mode, the users can manually specify the cutoffs, both low and high, of all 5 metrics: nUMI, nFeature, pctMito, pctSpikeIn for cells, and nCell for genes. No cells or features would be removed under the default cutoffs of each metrics.</li>
+</ul>
+<p>No matter which mode to use, filterSparseEset() returns a summary table with detailed information of filtration statistics. You can refer to it and adjust the cutoffs accordingly.</p>
+<div id="data-filtration-with-auto-mode" class="section level3 hasAnchor" number="5.2.1">
+<h3><span class="header-section-number">5.2.1</span> Data filtration with auto mode<a href="data-filtration.html#data-filtration-with-auto-mode" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>To conduct the filtering using the cutoffs recommended by scMINER:</p>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="data-filtration.html#cb61-1" tabindex="-1"></a><span class="do">## Filter eSet under the auto mode</span></span>
+<span id="cb61-2"><a href="data-filtration.html#cb61-2" tabindex="-1"></a>pbmc14k_filtered.eset <span class="ot">&lt;-</span> <span class="fu">filterSparseEset</span>(pbmc14k_raw.eset, <span class="at">filter_mode =</span> <span class="st">&quot;auto&quot;</span>, <span class="at">filter_type =</span> <span class="st">&quot;both&quot;</span>)</span></code></pre></div>
+<pre><code>## Checking the availability of the 5 metrics (&#39;nCell&#39;, &#39;nUMI&#39;, &#39;nFeature&#39;, &#39;pctMito&#39;, &#39;pctSpikeIn&#39;) used for filtration ...
+## Checking passed! All 5 metrics are available.
+## Filtration is done!</code></pre>
+<pre><code>## Filtration Summary:</code></pre>
+<pre><code>##  8846/17986 genes passed!</code></pre>
+<pre><code>##  13605/14000 cells passed!</code></pre>
+<pre><code>## 
+## For more details:
+##  Gene filtration statistics:
+##      Metrics     nCell
+##      Cutoff_Low  70
+##      Cutoff_High Inf
+##      Gene_total  17986
+##      Gene_passed 8846(49.18%)
+##      Gene_failed 9140(50.82%)
+## 
+##  Cell filtration statistics:
+##      Metrics     nUMI        nFeature    pctMito     pctSpikeIn  Combined
+##      Cutoff_Low  458     221     0       0       NA
+##      Cutoff_High 3694        Inf     0.0408      0.0000      NA
+##      Cell_total  14000       14000       14000       14000       14000
+##      Cell_passed 13826(98.76%)   14000(100.00%)  13778(98.41%)   14000(100.00%)  13605(97.18%)
+##      Cell_failed 174(1.24%)  0(0.00%)    222(1.59%)  0(0.00%)    395(2.82%)</code></pre>
+<p>In some cases, you may find that most of the cutoffs generated by the auto mode are good, except one or two. Though there is no ‘hybrid’ mode, scMINER does allow you to customize some of the cutoffs generated by the auto mode. This can be easily done by adding the cutoffs you would customize under the auto mode:</p>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="data-filtration.html#cb67-1" tabindex="-1"></a><span class="do">## Filter eSet under the auto mode, with customized values</span></span>
+<span id="cb67-2"><a href="data-filtration.html#cb67-2" tabindex="-1"></a>pbmc14k_filtered.eset <span class="ot">&lt;-</span> <span class="fu">filterSparseEset</span>(pbmc14k_raw.eset, <span class="at">filter_mode =</span> <span class="st">&quot;auto&quot;</span>, <span class="at">filter_type =</span> <span class="st">&quot;both&quot;</span>, <span class="at">gene.nCell_min =</span> <span class="dv">5</span>)</span></code></pre></div>
+<p>With the code above, scMINER will filter the eSet using all of the cutoffs generated by auto mode, except <code>gene.nCell_min</code>.</p>
+</div>
+<div id="data-filtration-with-manual-mode" class="section level3 hasAnchor" number="5.2.2">
+<h3><span class="header-section-number">5.2.2</span> Data filtration with manual mode<a href="data-filtration.html#data-filtration-with-manual-mode" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>To apply the self-customized cutoffs:</p>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb68-1"><a href="data-filtration.html#cb68-1" tabindex="-1"></a><span class="do">## Filter eSet under the manual mode</span></span>
+<span id="cb68-2"><a href="data-filtration.html#cb68-2" tabindex="-1"></a>pbmc14k_filtered.eset <span class="ot">&lt;-</span> <span class="fu">filterSparseEset</span>(pbmc14k_raw.eset, <span class="at">filter_mode =</span> <span class="st">&quot;manual&quot;</span>, <span class="at">filter_type =</span> <span class="st">&quot;both&quot;</span>, <span class="at">gene.nCell_min =</span> <span class="dv">10</span>, <span class="at">cell.nUMI_min =</span> <span class="dv">500</span>, <span class="at">cell.nUMI_max =</span> <span class="dv">6500</span>, <span class="at">cell.nFeature_min =</span> <span class="dv">200</span>, <span class="at">cell.nFeature_max =</span> <span class="dv">2500</span>, <span class="at">cell.pctMito_max =</span> <span class="fl">0.1</span>)</span></code></pre></div>
+<p>For any unspecified cutoff arguments, like <code>gene.nCell_max</code>, <code>filterSparseEset()</code> will automatically assign the default values to them. The default values of any cutoff argument would not filter out any cells or features. So, if you want to skip some metrics, just leave the cutoffs of them unspecified. For example, in the codes above, <code>gene.nCell_max</code> is unspecified. Then <code>filterSparseEset()</code> wil assign the default value, which is <code>Inf</code>, to it. No features would be filtered out by this argument.</p>
+
+</div>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-
-
+<a href="create-sparseeset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="data-normalization.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -294,7 +373,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/%s",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/05-data-filtration.Rmd",
 "text": "Edit"
 },
 "history": {

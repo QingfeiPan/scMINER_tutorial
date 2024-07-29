@@ -13,3 +13,8 @@ RnwWeave: Sweave
 LaTeX: pdfLaTeX
 
 BuildType: Website
+WebsitePath: /Users/qpan/Documents/R_Packages/scMINER_tutorial
+
+PythonType: virtualenv
+PythonVersion: 3.9.6
+PythonPath: ~/.virtualenvs/r-reticulate/bin/python
