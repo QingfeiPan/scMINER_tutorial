@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
+  <title>10.2 Differential activity analysis | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
   <meta name="description" content="A tutorial of scMINER" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta property="og:title" content="10.2 Differential activity analysis | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A tutorial of scMINER" />
   <meta name="github-repo" content="QingfeiPan/scMINER_qpan" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta name="twitter:title" content="10.2 Differential activity analysis | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   
   <meta name="twitter:description" content="A tutorial of scMINER" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="filter-the-sparse-eset-object.html"/>
-<link rel="next" href="mi-based-clustering-analysis.html"/>
+<link rel="prev" href="calculate-the-activities.html"/>
+<link rel="next" href="session-information.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -251,39 +251,100 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="data-normalization" class="section level1 hasAnchor" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Data normalization<a href="data-normalization.html#data-normalization" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>In this chapter, we will introduce the method of data normalization in scMINER.</p>
-<p>We recommend to use <strong><code>log2CPM</code></strong> method for normalization: the raw counts in each cell are normalized to a library size of 1 million, followed by log2 transformation.</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="data-normalization.html#cb69-1" tabindex="-1"></a>pbmc14k_log2cpm.eset <span class="ot">&lt;-</span> <span class="fu">normalizeSparseEset</span>(pbmc14k_filtered.eset, <span class="at">scale_factor =</span> <span class="dv">1000000</span>, <span class="at">log_base =</span> <span class="dv">2</span>, <span class="at">log_pseudoCount =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## Done! The data matrix of eset has been normalized and log-transformed!
-## The returned eset contains: 8846 genes, 13605 cells.</code></pre>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="data-normalization.html#cb71-1" tabindex="-1"></a><span class="fu">exprs</span>(pbmc14k_log2cpm.eset)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
-<pre><code>## 5 x 5 Matrix of class &quot;dgeMatrix&quot;
-##           CACTTTGACGCAAT GTTACGGAAACGAA CACTTATGAGTCGT GCATGTGATTCTGT
-## LINC00115              0        0.00000              0              0
-## NOC2L                  0        0.00000              0              0
-## HES4                   0        0.00000              0              0
-## ISG15                  0       10.05794              0              0
-## C1orf159               0        0.00000              0              0
-##           TAGAATACGTATCG
-## LINC00115              0
-## NOC2L                  0
-## HES4                   0
-## ISG15                  0
-## C1orf159               0</code></pre>
-<p>This normalized and log-transformed SparseEset object can be directly used for Mutual Information-based clustering, network inference and other downstream analysis.</p>
-<p>Don’t forget to save the SparseEset object after data normalization.</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="data-normalization.html#cb73-1" tabindex="-1"></a><span class="fu">saveRDS</span>(pbmc14k_log2cpm.eset, <span class="at">file =</span> <span class="st">&quot;/your-path/PBMC14k/DATA/pbmc14k_log2CPM_annotated.rds&quot;</span>)</span></code></pre></div>
+<div id="differential-activity-analysis" class="section level2 hasAnchor" number="10.2">
+<h2><span class="header-section-number">10.2</span> Differential activity analysis<a href="differential-activity-analysis.html#differential-activity-analysis" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Similar to <code>getDE()</code>, scMINER provides a function, <code>getDA()</code>, to perform the differential activity analysis and identify the group-specific drivers.</p>
+<div class="sourceCode" id="cb128"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb128-1"><a href="differential-activity-analysis.html#cb128-1" tabindex="-1"></a><span class="do">## 1. To perform differential expression analysis in a 1-vs-rest manner for all groups</span></span>
+<span id="cb128-2"><a href="differential-activity-analysis.html#cb128-2" tabindex="-1"></a>da_res1 <span class="ot">&lt;-</span> <span class="fu">getDA</span>(<span class="at">input_eset =</span> activity.eset, <span class="at">group_by =</span> <span class="st">&quot;cell_type&quot;</span>, <span class="at">use_method =</span> <span class="st">&quot;t.test&quot;</span>)</span></code></pre></div>
+<pre><code>## 7 groups were found in group_by column [ cell_type ].
+## Since no group was specified, the differential analysis will be conducted among all groups in the group_by column [ cell_type ] in the 1-vs-rest manner.
+##   1 / 7 : group 1 ( B ) vs the rest...
+##   1912 cells were found for g1.
+##   11693 cells were found for g0.
+##   2 / 7 : group 1 ( CD4TCM ) vs the rest...
+##   2022 cells were found for g1.
+##   11583 cells were found for g0.
+##   3 / 7 : group 1 ( CD4TN ) vs the rest...
+##   2505 cells were found for g1.
+##   11100 cells were found for g0.
+##   4 / 7 : group 1 ( CD4Treg ) vs the rest...
+##   1448 cells were found for g1.
+##   12157 cells were found for g0.
+##   5 / 7 : group 1 ( CD8TN ) vs the rest...
+##   2014 cells were found for g1.
+##   11591 cells were found for g0.
+##   6 / 7 : group 1 ( Monocyte ) vs the rest...
+##   1786 cells were found for g1.
+##   11819 cells were found for g0.
+##   7 / 7 : group 1 ( NK ) vs the rest...
+##   1918 cells were found for g1.
+##   11687 cells were found for g0.</code></pre>
+<div class="sourceCode" id="cb130"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb130-1"><a href="differential-activity-analysis.html#cb130-1" tabindex="-1"></a><span class="fu">head</span>(da_res1)</span></code></pre></div>
+<pre><code>##       feature g1_tag                                 g0_tag       g1_avg
+## 4   AASDH_SIG      B CD4TCM,CD4TN,CD4Treg,CD8TN,Monocyte,NK -0.008071658
+## 6    AATF_SIG      B CD4TCM,CD4TN,CD4Treg,CD8TN,Monocyte,NK -0.051767485
+## 12  ABCB8_SIG      B CD4TCM,CD4TN,CD4Treg,CD8TN,Monocyte,NK -0.077615607
+## 8   ABCA2_SIG      B CD4TCM,CD4TN,CD4Treg,CD8TN,Monocyte,NK -0.081643603
+## 10  ABCB1_SIG      B CD4TCM,CD4TN,CD4Treg,CD8TN,Monocyte,NK -0.134357577
+## 3  AARSD1_SIG      B CD4TCM,CD4TN,CD4Treg,CD8TN,Monocyte,NK -0.126010447
+##        g0_avg     g1_pct     g0_pct       log2FC          Pval           FDR
+## 4  -0.1025141 0.43043933 0.13991277  0.094442475 2.225074e-308  0.000000e+00
+## 6  -0.1084165 0.21652720 0.08757376  0.056649005 3.918924e-189 5.878386e-189
+## 12 -0.1094585 0.35251046 0.14153767  0.031842866  3.623209e-12  3.952592e-12
+## 8  -0.1101867 0.10198745 0.15676045  0.028543082  1.914570e-58  2.418404e-58
+## 10 -0.1559384 0.04393305 0.06114770  0.021580866  8.079661e-27  9.233898e-27
+## 3  -0.1225746 0.04184100 0.08192936 -0.003435892  4.213744e-02  4.213744e-02
+##      Zscore
+## 4  37.53784
+## 6  29.33316
+## 12  6.95115
+## 8  16.11775
+## 10 10.72137
+## 3  -2.03216</code></pre>
+<div class="sourceCode" id="cb132"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb132-1"><a href="differential-activity-analysis.html#cb132-1" tabindex="-1"></a><span class="do">## 2. To perform differential expression analysis in a 1-vs-rest manner for one specific group</span></span>
+<span id="cb132-2"><a href="differential-activity-analysis.html#cb132-2" tabindex="-1"></a>da_res2 <span class="ot">&lt;-</span> <span class="fu">getDA</span>(<span class="at">input_eset =</span> activity.eset, <span class="at">group_by =</span> <span class="st">&quot;cell_type&quot;</span>, <span class="at">g1 =</span> <span class="fu">c</span>(<span class="st">&quot;B&quot;</span>), <span class="at">use_method =</span> <span class="st">&quot;t.test&quot;</span>)</span>
+<span id="cb132-3"><a href="differential-activity-analysis.html#cb132-3" tabindex="-1"></a></span>
+<span id="cb132-4"><a href="differential-activity-analysis.html#cb132-4" tabindex="-1"></a><span class="do">## 3. To perform differential expression analysis in a rest-vs-1 manner for one specific group</span></span>
+<span id="cb132-5"><a href="differential-activity-analysis.html#cb132-5" tabindex="-1"></a>da_res3 <span class="ot">&lt;-</span> <span class="fu">getDA</span>(<span class="at">input_eset =</span> activity.eset, <span class="at">group_by =</span> <span class="st">&quot;cell_type&quot;</span>, <span class="at">g0 =</span> <span class="fu">c</span>(<span class="st">&quot;B&quot;</span>), <span class="at">use_method =</span> <span class="st">&quot;t.test&quot;</span>)</span>
+<span id="cb132-6"><a href="differential-activity-analysis.html#cb132-6" tabindex="-1"></a></span>
+<span id="cb132-7"><a href="differential-activity-analysis.html#cb132-7" tabindex="-1"></a><span class="do">## 4. To perform differential expression analysis in a 1-vs-1 manner for any two groups</span></span>
+<span id="cb132-8"><a href="differential-activity-analysis.html#cb132-8" tabindex="-1"></a>da_res4 <span class="ot">&lt;-</span> <span class="fu">getDA</span>(<span class="at">input_eset =</span> activity.eset, <span class="at">group_by =</span> <span class="st">&quot;cell_type&quot;</span>, <span class="at">g1 =</span> <span class="fu">c</span>(<span class="st">&quot;CD4Treg&quot;</span>), <span class="at">g0 =</span> <span class="fu">c</span>(<span class="st">&quot;CD4TCM&quot;</span>), <span class="at">use_method =</span> <span class="st">&quot;t.test&quot;</span>)</span></code></pre></div>
+<p>The <code>getTopFeatures()</code> function can aslo be used to easily extract the group-specific markers from the differential expression result:</p>
+<div class="sourceCode" id="cb133"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb133-1"><a href="differential-activity-analysis.html#cb133-1" tabindex="-1"></a>top_drivers <span class="ot">&lt;-</span> <span class="fu">getTopFeatures</span>(<span class="at">input_table =</span> da_res1, <span class="at">number =</span> <span class="dv">10</span>, <span class="at">group_by =</span> <span class="st">&quot;g1_tag&quot;</span>, <span class="at">sort_by =</span> <span class="st">&quot;log2FC&quot;</span>, <span class="at">sort_decreasing =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb133-2"><a href="differential-activity-analysis.html#cb133-2" tabindex="-1"></a><span class="fu">dim</span>(top_drivers)</span></code></pre></div>
+<pre><code>## [1] 16 11</code></pre>
+<div class="sourceCode" id="cb135"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb135-1"><a href="differential-activity-analysis.html#cb135-1" tabindex="-1"></a><span class="fu">head</span>(top_drivers)</span></code></pre></div>
+<pre><code>##       feature g1_tag                                 g0_tag       g1_avg
+## 4   AASDH_SIG      B CD4TCM,CD4TN,CD4Treg,CD8TN,Monocyte,NK -0.008071658
+## 6    AATF_SIG      B CD4TCM,CD4TN,CD4Treg,CD8TN,Monocyte,NK -0.051767485
+## 12  ABCB8_SIG      B CD4TCM,CD4TN,CD4Treg,CD8TN,Monocyte,NK -0.077615607
+## 8   ABCA2_SIG      B CD4TCM,CD4TN,CD4Treg,CD8TN,Monocyte,NK -0.081643603
+## 10  ABCB1_SIG      B CD4TCM,CD4TN,CD4Treg,CD8TN,Monocyte,NK -0.134357577
+## 3  AARSD1_SIG      B CD4TCM,CD4TN,CD4Treg,CD8TN,Monocyte,NK -0.126010447
+##        g0_avg     g1_pct     g0_pct       log2FC          Pval           FDR
+## 4  -0.1025141 0.43043933 0.13991277  0.094442475 2.225074e-308  0.000000e+00
+## 6  -0.1084165 0.21652720 0.08757376  0.056649005 3.918924e-189 5.878386e-189
+## 12 -0.1094585 0.35251046 0.14153767  0.031842866  3.623209e-12  3.952592e-12
+## 8  -0.1101867 0.10198745 0.15676045  0.028543082  1.914570e-58  2.418404e-58
+## 10 -0.1559384 0.04393305 0.06114770  0.021580866  8.079661e-27  9.233898e-27
+## 3  -0.1225746 0.04184100 0.08192936 -0.003435892  4.213744e-02  4.213744e-02
+##      Zscore
+## 4  37.53784
+## 6  29.33316
+## 12  6.95115
+## 8  16.11775
+## 10 10.72137
+## 3  -2.03216</code></pre>
 
 </div>
+<!-- </div> -->
             </section>
 
           </div>
         </div>
       </div>
-<a href="filter-the-sparse-eset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="mi-based-clustering-analysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="calculate-the-activities.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="session-information.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -314,7 +375,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/06-data-normalization.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/10-activity-analysis.Rmd",
 "text": "Edit"
 },
 "history": {

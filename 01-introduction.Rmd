@@ -1,6 +1,6 @@
 # Introduction
 
-This chapter will introduce 
+This chapter will introduce some principal concepts and unique features of scMINER.
 
 ## A few concepts
 
@@ -8,14 +8,34 @@ There are a few concepts that may help you understand scMINER better.
 
 ### SparseEset {-}
 
+The **`SparseExpressionSet`** (or **`SparseEset`** for short) is a new class created by scMINER to handle the sparsity in scRNA-seq data. It is derived from [ExpressionSet](https://www.bioconductor.org/packages/release/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf), and enables to compress, store and access efficiently and conveniently.
+
+The SparseEset object is the **center** of scRNA-seq data analysis by scMINER.
+
 ### Mutual Information {-}
+
+[Mutual information](https://en.wikipedia.org/wiki/Mutual_information) is a measure of the mutual dependence between two random variables. It quantifies the amount of information obtained about one variable through the other variable. In other words, it measures how much knowing the value of one variable reduces uncertainty about the value of the other variable. It's widely used in probability theory and information theory.
+
+Compared with the linear correlation that used by most existing tools for scRNA-seq data clustering, mutual information provides a **more general measure** of dependence that can capture ***both linear and non-linear relationships***, and hence may increases the accuracy and sensitivity of scRNA-seq data clustering.
+
+
+||Linear Correlation|Mutual Information|
+|:---|:---|:---|
+|Definition|Measures linear relationship|Measures mutual dependence (both linear and non-linear)|
+|Range|-1 to 1|0 to Inf|
+|Sensitivity to outliers|Sensitive|Less sensitive|
+|Captures Non-linear Relationships|No|Yes|
+|Common Applications|Regression, finance, science|Feature selection, clustering, network inference|
+
+Table: **Comparison of Linear Correlation and Mutual Information (powered by ChatGPT)**
 
 ### Gene Activity {-}
 
+The gene activity estimation is one of the most important features of scMINER. ***Mathematically***, the activity of one gene is a type of mean of the expressions of its targets. And ***biologically***, the activity can be interpreted as a measure that describes how actively the driver functions, like the enzymes in digesting their subtracts, kinase in activating their downstream genes. Given the gene expression profiles and networks, scMINER can estimate the activities of some predefined drivers, including not only transcription factors (TFs) but also signaling genes (SIGs). 
 
 ## Why use scMINER
 
-(more deteils to be added)
+(more details to be added)
 
 scMINER includes the following key functions:
 

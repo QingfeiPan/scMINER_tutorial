@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
+  <title>9.3 Assess the quality of networks | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
   <meta name="description" content="A tutorial of scMINER" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta property="og:title" content="9.3 Assess the quality of networks | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A tutorial of scMINER" />
   <meta name="github-repo" content="QingfeiPan/scMINER_qpan" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta name="twitter:title" content="9.3 Assess the quality of networks | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   
   <meta name="twitter:description" content="A tutorial of scMINER" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="filter-the-sparse-eset-object.html"/>
-<link rel="next" href="mi-based-clustering-analysis.html"/>
+<link rel="prev" href="run-sjaracne.html"/>
+<link rel="next" href="actvity-based-analysis.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -251,39 +251,79 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="data-normalization" class="section level1 hasAnchor" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Data normalization<a href="data-normalization.html#data-normalization" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>In this chapter, we will introduce the method of data normalization in scMINER.</p>
-<p>We recommend to use <strong><code>log2CPM</code></strong> method for normalization: the raw counts in each cell are normalized to a library size of 1 million, followed by log2 transformation.</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="data-normalization.html#cb69-1" tabindex="-1"></a>pbmc14k_log2cpm.eset <span class="ot">&lt;-</span> <span class="fu">normalizeSparseEset</span>(pbmc14k_filtered.eset, <span class="at">scale_factor =</span> <span class="dv">1000000</span>, <span class="at">log_base =</span> <span class="dv">2</span>, <span class="at">log_pseudoCount =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## Done! The data matrix of eset has been normalized and log-transformed!
-## The returned eset contains: 8846 genes, 13605 cells.</code></pre>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="data-normalization.html#cb71-1" tabindex="-1"></a><span class="fu">exprs</span>(pbmc14k_log2cpm.eset)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
-<pre><code>## 5 x 5 Matrix of class &quot;dgeMatrix&quot;
-##           CACTTTGACGCAAT GTTACGGAAACGAA CACTTATGAGTCGT GCATGTGATTCTGT
-## LINC00115              0        0.00000              0              0
-## NOC2L                  0        0.00000              0              0
-## HES4                   0        0.00000              0              0
-## ISG15                  0       10.05794              0              0
-## C1orf159               0        0.00000              0              0
-##           TAGAATACGTATCG
-## LINC00115              0
-## NOC2L                  0
-## HES4                   0
-## ISG15                  0
-## C1orf159               0</code></pre>
-<p>This normalized and log-transformed SparseEset object can be directly used for Mutual Information-based clustering, network inference and other downstream analysis.</p>
-<p>Don’t forget to save the SparseEset object after data normalization.</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="data-normalization.html#cb73-1" tabindex="-1"></a><span class="fu">saveRDS</span>(pbmc14k_log2cpm.eset, <span class="at">file =</span> <span class="st">&quot;/your-path/PBMC14k/DATA/pbmc14k_log2CPM_annotated.rds&quot;</span>)</span></code></pre></div>
+<div id="assess-the-quality-of-networks" class="section level2 hasAnchor" number="9.3">
+<h2><span class="header-section-number">9.3</span> Assess the quality of networks<a href="assess-the-quality-of-networks.html#assess-the-quality-of-networks" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="introduction-to-the-network-file-by-sjaracne" class="section level3 hasAnchor" number="9.3.1">
+<h3><span class="header-section-number">9.3.1</span> Introduction to the network file by SJARACNe<a href="assess-the-quality-of-networks.html#introduction-to-the-network-file-by-sjaracne" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The core output of SJARACNe is the network file named <code>consensus_network_ncol_.txt</code>. It contains 9 columns:</p>
+<ul>
+<li><strong>source</strong>: ID of the source gene, can be the gene symbol;</li>
+<li><strong>target</strong>: ID of the target gene, can be the gene symbol;</li>
+<li><strong>source.symbol</strong>: symbol of the source gene;</li>
+<li><strong>target.symbol</strong>: symbol of the target gene;</li>
+<li><strong>MI</strong>: mutual information of source-gene pair;</li>
+<li><strong>pearson</strong>: Pearson correlation coefficient, [-1,1]</li>
+<li><strong>pearson</strong>: Spearman correlation coefficient, [-1,1]</li>
+<li><strong>slope</strong>: slop of the regression line, returned by <code>stats.linregression()</code></li>
+<li><strong>p.value</strong>: p-value for a hypothesis test whose null hypothesis is that the slope is zero, using Wald Test with t-distribution of the test statistic</li>
+</ul>
+<div class="sourceCode" id="cb119"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb119-1"><a href="assess-the-quality-of-networks.html#cb119-1" tabindex="-1"></a>network_format <span class="ot">&lt;-</span> <span class="fu">read.table</span>(<span class="fu">system.file</span>(<span class="st">&quot;extdata/demo_pbmc14k/PBMC14k/SJARACNe/B/TF/bt100_pc001/consensus_network_ncol_.txt&quot;</span>, <span class="at">package =</span> <span class="st">&quot;scMINER&quot;</span>),</span>
+<span id="cb119-2"><a href="assess-the-quality-of-networks.html#cb119-2" tabindex="-1"></a>                             <span class="at">header =</span> T, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\t</span><span class="st">&quot;</span>, <span class="at">quote =</span> <span class="st">&quot;&quot;</span>, <span class="at">stringsAsFactors =</span> F)</span>
+<span id="cb119-3"><a href="assess-the-quality-of-networks.html#cb119-3" tabindex="-1"></a><span class="fu">head</span>(network_format)</span></code></pre></div>
+<pre><code>##   source     target source.symbol target.symbol     MI pearson spearman   slope
+## 1   AATF      ACBD3          AATF         ACBD3 0.0509 -0.0310  -0.0311 -0.0193
+## 2   AATF       ADD3          AATF          ADD3 0.0486  0.0228   0.0258  0.0307
+## 3   AATF        AES          AATF           AES 0.0511  0.0311   0.0289  0.0668
+## 4   AATF     AKR7A2          AATF        AKR7A2 0.0498  0.0319   0.0366  0.0421
+## 5   AATF AL928768.3          AATF    AL928768.3 0.0447  0.0247   0.0293  0.0335
+## 6   AATF       ALG8          AATF          ALG8 0.0479  0.0358   0.0373  0.0234
+##   p.value
+## 1  0.1761
+## 2  0.3204
+## 3  0.1756
+## 4  0.1646
+## 5  0.2815
+## 6  0.1183</code></pre>
+</div>
+<div id="generate-network-qc-report" class="section level3 hasAnchor" number="9.3.2">
+<h3><span class="header-section-number">9.3.2</span> Generate network QC report<a href="assess-the-quality-of-networks.html#generate-network-qc-report" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>There is no simple standards to tell the reliability of networks. Empirically, a network with <strong>50-300</strong> target size is good. scMINER provides a function, <code>drawNetworkQC()</code>, to quickly assess the quality of networks in batch.</p>
+<div class="sourceCode" id="cb121"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb121-1"><a href="assess-the-quality-of-networks.html#cb121-1" tabindex="-1"></a>network_stats <span class="ot">&lt;-</span> <span class="fu">drawNetworkQC</span>(<span class="at">sjaracne_dir =</span> <span class="st">&quot;/work-path/PBMC14K/SJARACNe&quot;</span>, <span class="at">generate_html =</span> <span class="cn">FALSE</span>) <span class="co"># Set `generate_html = TRUE` to generate html-format QC report for each network file</span></span></code></pre></div>
+<div class="sourceCode" id="cb122"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb122-1"><a href="assess-the-quality-of-networks.html#cb122-1" tabindex="-1"></a><span class="do">## The network QC statistics table is saved seperately, for demonstration purposes.</span></span>
+<span id="cb122-2"><a href="assess-the-quality-of-networks.html#cb122-2" tabindex="-1"></a>network_stats <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">system.file</span>(<span class="st">&quot;extdata/demo_pbmc14k/PBMC14k/SJARACNe/network_stats.rds&quot;</span>, <span class="at">package =</span> <span class="st">&quot;scMINER&quot;</span>))</span>
+<span id="cb122-3"><a href="assess-the-quality-of-networks.html#cb122-3" tabindex="-1"></a><span class="fu">head</span>(network_stats)</span></code></pre></div>
+<pre><code>##              network_tag network_node network_edge driver_count targetSize_mean
+## 1      B.SIG.bt100_pc001         8572       391889         4148        94.47662
+## 2       B.TF.bt100_pc001         8572        95341          835       114.18084
+## 3 CD4TCM.SIG.bt100_pc001         8660       382153         4209        90.79425
+## 4  CD4TCM.TF.bt100_pc001         8660        94319          838       112.55251
+## 5  CD4TN.SIG.bt100_pc001         8612       401658         4180        96.09043
+## 6   CD4TN.TF.bt100_pc001         8612        95152          831       114.50301
+##   targetSize_median targetSize_minimum targetSize_maximum
+## 1              94.0                 33                396
+## 2              96.0                 64                913
+## 3              91.0                 31                281
+## 4              95.5                 60                689
+## 5              95.0                 43                303
+## 6              99.0                 64                743
+##                                                                                                                                                                                               network_path
+## 1      /Volumes/projects/scRNASeq/yu3grp/scMINER/NG_Revision/QPan/scminer_R/Datasets/PBMC14K/SJARACNe/B/SIG/bt100_pc001/sjaracne_workflow-df798096-8dee-4baf-8f70-891c689dc769/consensus_network_ncol_.txt
+## 2       /Volumes/projects/scRNASeq/yu3grp/scMINER/NG_Revision/QPan/scminer_R/Datasets/PBMC14K/SJARACNe/B/TF/bt100_pc001/sjaracne_workflow-fb2a69b9-f98e-47ff-87a0-6d538822fc6e/consensus_network_ncol_.txt
+## 3 /Volumes/projects/scRNASeq/yu3grp/scMINER/NG_Revision/QPan/scminer_R/Datasets/PBMC14K/SJARACNe/CD4TCM/SIG/bt100_pc001/sjaracne_workflow-424f1068-13d1-4f0e-9c26-56acd9a2027c/consensus_network_ncol_.txt
+## 4  /Volumes/projects/scRNASeq/yu3grp/scMINER/NG_Revision/QPan/scminer_R/Datasets/PBMC14K/SJARACNe/CD4TCM/TF/bt100_pc001/sjaracne_workflow-52b3cdf5-5914-4c8c-a77a-05f17c755d83/consensus_network_ncol_.txt
+## 5  /Volumes/projects/scRNASeq/yu3grp/scMINER/NG_Revision/QPan/scminer_R/Datasets/PBMC14K/SJARACNe/CD4TN/SIG/bt100_pc001/sjaracne_workflow-7b5bb68e-1de5-4d0e-80ec-8d8aa037866f/consensus_network_ncol_.txt
+## 6   /Volumes/projects/scRNASeq/yu3grp/scMINER/NG_Revision/QPan/scminer_R/Datasets/PBMC14K/SJARACNe/CD4TN/TF/bt100_pc001/sjaracne_workflow-89716541-eb53-435c-8a45-bab63d6b5198/consensus_network_ncol_.txt</code></pre>
 
 </div>
+</div>
+<!-- </div> -->
             </section>
 
           </div>
         </div>
       </div>
-<a href="filter-the-sparse-eset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="mi-based-clustering-analysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="run-sjaracne.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="actvity-based-analysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -314,7 +354,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/06-data-normalization.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/09-network-inference.Rmd",
 "text": "Edit"
 },
 "history": {

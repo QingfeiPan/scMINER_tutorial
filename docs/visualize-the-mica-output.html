@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
+  <title>7.5 Visualize the MICA output | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
   <meta name="description" content="A tutorial of scMINER" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta property="og:title" content="7.5 Visualize the MICA output | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A tutorial of scMINER" />
   <meta name="github-repo" content="QingfeiPan/scMINER_qpan" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta name="twitter:title" content="7.5 Visualize the MICA output | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   
   <meta name="twitter:description" content="A tutorial of scMINER" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="filter-the-sparse-eset-object.html"/>
-<link rel="next" href="mi-based-clustering-analysis.html"/>
+<link rel="prev" href="integrate-mica-outputs-into-sparseeset-object.html"/>
+<link rel="next" href="cell-type-annotation.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -251,39 +251,45 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="data-normalization" class="section level1 hasAnchor" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Data normalization<a href="data-normalization.html#data-normalization" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>In this chapter, we will introduce the method of data normalization in scMINER.</p>
-<p>We recommend to use <strong><code>log2CPM</code></strong> method for normalization: the raw counts in each cell are normalized to a library size of 1 million, followed by log2 transformation.</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="data-normalization.html#cb69-1" tabindex="-1"></a>pbmc14k_log2cpm.eset <span class="ot">&lt;-</span> <span class="fu">normalizeSparseEset</span>(pbmc14k_filtered.eset, <span class="at">scale_factor =</span> <span class="dv">1000000</span>, <span class="at">log_base =</span> <span class="dv">2</span>, <span class="at">log_pseudoCount =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## Done! The data matrix of eset has been normalized and log-transformed!
-## The returned eset contains: 8846 genes, 13605 cells.</code></pre>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="data-normalization.html#cb71-1" tabindex="-1"></a><span class="fu">exprs</span>(pbmc14k_log2cpm.eset)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
-<pre><code>## 5 x 5 Matrix of class &quot;dgeMatrix&quot;
-##           CACTTTGACGCAAT GTTACGGAAACGAA CACTTATGAGTCGT GCATGTGATTCTGT
-## LINC00115              0        0.00000              0              0
-## NOC2L                  0        0.00000              0              0
-## HES4                   0        0.00000              0              0
-## ISG15                  0       10.05794              0              0
-## C1orf159               0        0.00000              0              0
-##           TAGAATACGTATCG
-## LINC00115              0
-## NOC2L                  0
-## HES4                   0
-## ISG15                  0
-## C1orf159               0</code></pre>
-<p>This normalized and log-transformed SparseEset object can be directly used for Mutual Information-based clustering, network inference and other downstream analysis.</p>
-<p>Don’t forget to save the SparseEset object after data normalization.</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="data-normalization.html#cb73-1" tabindex="-1"></a><span class="fu">saveRDS</span>(pbmc14k_log2cpm.eset, <span class="at">file =</span> <span class="st">&quot;/your-path/PBMC14k/DATA/pbmc14k_log2CPM_annotated.rds&quot;</span>)</span></code></pre></div>
+<div id="visualize-the-mica-output" class="section level2 hasAnchor" number="7.5">
+<h2><span class="header-section-number">7.5</span> Visualize the MICA output<a href="visualize-the-mica-output.html#visualize-the-mica-output" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>scMINER provides a function, <code>MICAplot()</code> to easily visualize the clustering results on a 2D plot, UMAP or tSNE. And it can be colored by multiple variables, including <strong>cluster label</strong>, <strong>sample source</strong>, <strong>nUMI</strong>, <strong>nFeature</strong>, <strong>pctMito</strong> and more.</p>
+<div id="color-coded-by-cluster-labels" class="section level3 hasAnchor" number="7.5.1">
+<h3><span class="header-section-number">7.5.1</span> Color-coded by cluster labels<a href="visualize-the-mica-output.html#color-coded-by-cluster-labels" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="visualize-the-mica-output.html#cb81-1" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb81-2"><a href="visualize-the-mica-output.html#cb81-2" tabindex="-1"></a><span class="fu">MICAplot</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">color_by =</span> <span class="st">&quot;clusterID&quot;</span>, <span class="at">X =</span> <span class="st">&quot;UMAP_1&quot;</span>, <span class="at">Y =</span> <span class="st">&quot;UMAP_2&quot;</span>, <span class="at">point.size =</span> <span class="fl">0.1</span>, <span class="at">fontsize.cluster_label =</span> <span class="dv">6</span>)</span></code></pre></div>
+<p><img src="_main_files/figure-html/visualize-mica-output-cluster-1.png" width="576" style="display: block; margin: auto;" /></p>
+</div>
+<div id="color-coded-by-true-label-of-cell-types" class="section level3 hasAnchor" number="7.5.2">
+<h3><span class="header-section-number">7.5.2</span> Color-coded by true label of cell types<a href="visualize-the-mica-output.html#color-coded-by-true-label-of-cell-types" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb82"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb82-1"><a href="visualize-the-mica-output.html#cb82-1" tabindex="-1"></a><span class="fu">MICAplot</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">color_by =</span> <span class="st">&quot;trueLabel&quot;</span>, <span class="at">X =</span> <span class="st">&quot;UMAP_1&quot;</span>, <span class="at">Y =</span> <span class="st">&quot;UMAP_2&quot;</span>, <span class="at">point.size =</span> <span class="fl">0.1</span>, <span class="at">fontsize.cluster_label =</span> <span class="dv">4</span>)</span></code></pre></div>
+<p><img src="_main_files/figure-html/visualize-mica-output-truelabel-1.png" width="624" style="display: block; margin: auto;" /></p>
+</div>
+<div id="color-coded-by-numi-for-qc-purpose" class="section level3 hasAnchor" number="7.5.3">
+<h3><span class="header-section-number">7.5.3</span> Color-coded by nUMI, for QC purpose<a href="visualize-the-mica-output.html#color-coded-by-numi-for-qc-purpose" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb83-1"><a href="visualize-the-mica-output.html#cb83-1" tabindex="-1"></a><span class="fu">MICAplot</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">color_by =</span> <span class="st">&quot;nUMI&quot;</span>, <span class="at">do.logTransform =</span> <span class="cn">TRUE</span>, <span class="at">point.size =</span> <span class="fl">0.1</span>)</span></code></pre></div>
+<pre><code>## The values in &quot;nUMI&quot; have been transformed by log2(value + 1). To turn transformation off, set do.logTransform = FALSE.</code></pre>
+<p><img src="_main_files/figure-html/visualize-mica-output-numi-1.png" width="624" style="display: block; margin: auto;" /></p>
+</div>
+<div id="color-coded-by-nfeature-for-qc-purpose" class="section level3 hasAnchor" number="7.5.4">
+<h3><span class="header-section-number">7.5.4</span> Color-coded by nFeature, for QC purpose<a href="visualize-the-mica-output.html#color-coded-by-nfeature-for-qc-purpose" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="visualize-the-mica-output.html#cb85-1" tabindex="-1"></a><span class="fu">MICAplot</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">color_by =</span> <span class="st">&quot;nFeature&quot;</span>, <span class="at">do.logTransform =</span> <span class="cn">TRUE</span>, <span class="at">point.size =</span> <span class="fl">0.1</span>)</span></code></pre></div>
+<pre><code>## The values in &quot;nFeature&quot; have been transformed by log2(value + 1). To turn transformation off, set do.logTransform = FALSE.</code></pre>
+<p><img src="_main_files/figure-html/visualize-mica-output-nfeature-1.png" width="624" style="display: block; margin: auto;" />
+### Color-coded by pctMito, for QC purpose</p>
+<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="visualize-the-mica-output.html#cb87-1" tabindex="-1"></a><span class="fu">MICAplot</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">color_by =</span> <span class="st">&quot;pctMito&quot;</span>, <span class="at">do.logTransform =</span> <span class="cn">FALSE</span>, <span class="at">point.size =</span> <span class="fl">0.1</span>)</span></code></pre></div>
+<p><img src="_main_files/figure-html/visualize-mica-output-pctmito-1.png" width="624" style="display: block; margin: auto;" /></p>
 
 </div>
+</div>
+<!-- </div> -->
             </section>
 
           </div>
         </div>
       </div>
-<a href="filter-the-sparse-eset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="mi-based-clustering-analysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="integrate-mica-outputs-into-sparseeset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="cell-type-annotation.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -314,7 +320,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/06-data-normalization.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/07-clustering-analysis.Rmd",
 "text": "Edit"
 },
 "history": {

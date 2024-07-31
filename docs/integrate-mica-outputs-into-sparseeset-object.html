@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
+  <title>7.4 Integrate MICA outputs into SparseEset object | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
   <meta name="description" content="A tutorial of scMINER" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta property="og:title" content="7.4 Integrate MICA outputs into SparseEset object | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A tutorial of scMINER" />
   <meta name="github-repo" content="QingfeiPan/scMINER_qpan" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta name="twitter:title" content="7.4 Integrate MICA outputs into SparseEset object | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   
   <meta name="twitter:description" content="A tutorial of scMINER" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="filter-the-sparse-eset-object.html"/>
-<link rel="next" href="mi-based-clustering-analysis.html"/>
+<link rel="prev" href="run-mica.html"/>
+<link rel="next" href="visualize-the-mica-output.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -251,39 +251,50 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="data-normalization" class="section level1 hasAnchor" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Data normalization<a href="data-normalization.html#data-normalization" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>In this chapter, we will introduce the method of data normalization in scMINER.</p>
-<p>We recommend to use <strong><code>log2CPM</code></strong> method for normalization: the raw counts in each cell are normalized to a library size of 1 million, followed by log2 transformation.</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="data-normalization.html#cb69-1" tabindex="-1"></a>pbmc14k_log2cpm.eset <span class="ot">&lt;-</span> <span class="fu">normalizeSparseEset</span>(pbmc14k_filtered.eset, <span class="at">scale_factor =</span> <span class="dv">1000000</span>, <span class="at">log_base =</span> <span class="dv">2</span>, <span class="at">log_pseudoCount =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## Done! The data matrix of eset has been normalized and log-transformed!
-## The returned eset contains: 8846 genes, 13605 cells.</code></pre>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="data-normalization.html#cb71-1" tabindex="-1"></a><span class="fu">exprs</span>(pbmc14k_log2cpm.eset)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
-<pre><code>## 5 x 5 Matrix of class &quot;dgeMatrix&quot;
-##           CACTTTGACGCAAT GTTACGGAAACGAA CACTTATGAGTCGT GCATGTGATTCTGT
-## LINC00115              0        0.00000              0              0
-## NOC2L                  0        0.00000              0              0
-## HES4                   0        0.00000              0              0
-## ISG15                  0       10.05794              0              0
-## C1orf159               0        0.00000              0              0
-##           TAGAATACGTATCG
-## LINC00115              0
-## NOC2L                  0
-## HES4                   0
-## ISG15                  0
-## C1orf159               0</code></pre>
-<p>This normalized and log-transformed SparseEset object can be directly used for Mutual Information-based clustering, network inference and other downstream analysis.</p>
-<p>Don’t forget to save the SparseEset object after data normalization.</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="data-normalization.html#cb73-1" tabindex="-1"></a><span class="fu">saveRDS</span>(pbmc14k_log2cpm.eset, <span class="at">file =</span> <span class="st">&quot;/your-path/PBMC14k/DATA/pbmc14k_log2CPM_annotated.rds&quot;</span>)</span></code></pre></div>
-
+<div id="integrate-mica-outputs-into-sparseeset-object" class="section level2 hasAnchor" number="7.4">
+<h2><span class="header-section-number">7.4</span> Integrate MICA outputs into SparseEset object<a href="integrate-mica-outputs-into-sparseeset-object.html#integrate-mica-outputs-into-sparseeset-object" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>MICA generates several files and save all of them in the output directory specified by the user with <code>-o</code> argument. The core, and only, output file we need for subsequent analysis is the clustering label file named in the format of <code>ProjectName_clustering_VisualizeMethod_euclidean_NumberOfDimensions_Resolution.txt</code>. In this case, since we used a range of resolutions, there are several clustering label files generated, one for each resolution. Based on the knowledge about PBMC14k dataset, we compared the results of different resolutions and picked <code>clustering_UMAP_euclidean_20_2.05.txt</code> for subsequent analysis.</p>
+<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb77-1"><a href="integrate-mica-outputs-into-sparseeset-object.html#cb77-1" tabindex="-1"></a>micaOutput <span class="ot">&lt;-</span> <span class="fu">read.table</span>(<span class="fu">system.file</span>(<span class="st">&quot;extdata/demo_pbmc14k/PBMC14k/MICA/clustering_UMAP_euclidean_20_2.05.txt&quot;</span>, <span class="at">package =</span> <span class="st">&quot;scMINER&quot;</span>), <span class="at">header =</span> <span class="cn">TRUE</span>, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\t</span><span class="st">&quot;</span>, <span class="at">quote =</span> <span class="st">&quot;&quot;</span>, <span class="at">stringsAsFactors =</span> F)</span>
+<span id="cb77-2"><a href="integrate-mica-outputs-into-sparseeset-object.html#cb77-2" tabindex="-1"></a><span class="fu">head</span>(micaOutput)</span></code></pre></div>
+<pre><code>##               ID        X        Y label
+## 1 CACTTTGACGCAAT 14.91650 13.04096     6
+## 2 GTTACGGAAACGAA 14.57031 10.27093     6
+## 3 CACTTATGAGTCGT 14.28869 13.61674     6
+## 4 GCATGTGATTCTGT 14.12546 13.36319     6
+## 5 TAGAATACGTATCG 14.91227 11.19407     6
+## 6 CAAGAAGACCCTCA 15.34154 12.25821     6</code></pre>
+<p>As shown above, the clustering label file contains four columns:</p>
+<ul>
+<li><code>ID</code>: cell barcodes;</li>
+<li><code>X</code>: coordinates of UMAP_1 or tSNE_1;</li>
+<li><code>Y</code>: coordinates of UMAP_2 or tSNE_2;</li>
+<li><code>label</code>: labels of predicted clusters.</li>
+</ul>
+<p>The clustering result can be easily easily added to the SparseExpressionSet object by <code>addMICAoutput()</code>:</p>
+<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb79-1"><a href="integrate-mica-outputs-into-sparseeset-object.html#cb79-1" tabindex="-1"></a>pbmc14k_log2cpm.eset <span class="ot">&lt;-</span> <span class="fu">addMICAoutput</span>(pbmc14k_log2cpm.eset, <span class="at">mica_output_file =</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata/demo_pbmc14k/PBMC14k/MICA/clustering_UMAP_euclidean_20_2.05.txt&quot;</span>, <span class="at">package =</span> <span class="st">&quot;scMINER&quot;</span>), <span class="at">visual_method =</span> <span class="st">&quot;umap&quot;</span>)</span>
+<span id="cb79-2"><a href="integrate-mica-outputs-into-sparseeset-object.html#cb79-2" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">pData</span>(pbmc14k_log2cpm.eset))</span></code></pre></div>
+<pre><code>##                trueLabel_full trueLabel projectID nUMI nFeature    pctMito
+## CACTTTGACGCAAT CD14+ Monocyte  Monocyte   PBMC14k  764      354 0.01832461
+## GTTACGGAAACGAA CD14+ Monocyte  Monocyte   PBMC14k  956      442 0.01569038
+## CACTTATGAGTCGT CD14+ Monocyte  Monocyte   PBMC14k  629      323 0.02066773
+## GCATGTGATTCTGT CD14+ Monocyte  Monocyte   PBMC14k  875      427 0.02628571
+## TAGAATACGTATCG CD14+ Monocyte  Monocyte   PBMC14k 1060      445 0.03207547
+## CAAGAAGACCCTCA CD14+ Monocyte  Monocyte   PBMC14k  849      384 0.01531213
+##                pctSpikeIn         CellID   UMAP_1   UMAP_2 clusterID
+## CACTTTGACGCAAT          0 CACTTTGACGCAAT 14.91650 13.04096         6
+## GTTACGGAAACGAA          0 GTTACGGAAACGAA 14.57031 10.27093         6
+## CACTTATGAGTCGT          0 CACTTATGAGTCGT 14.28869 13.61674         6
+## GCATGTGATTCTGT          0 GCATGTGATTCTGT 14.12546 13.36319         6
+## TAGAATACGTATCG          0 TAGAATACGTATCG 14.91227 11.19407         6
+## CAAGAAGACCCTCA          0 CAAGAAGACCCTCA 15.34154 12.25821         6</code></pre>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="filter-the-sparse-eset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="mi-based-clustering-analysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="run-mica.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="visualize-the-mica-output.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -314,7 +325,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/06-data-normalization.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/07-clustering-analysis.Rmd",
 "text": "Edit"
 },
 "history": {

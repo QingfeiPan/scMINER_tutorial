@@ -41,7 +41,7 @@ MICA features two different modes named by their different dimension reduction t
 
 In this case, since there are 13,605 cells, we will use the `MICA GE` mode for the clustering:
 ```{r, run-mica-ge, engine = 'bash', eval=FALSE}
-mica ge -i /work-path/PBMC14k/MICA/micaInput.txt -o /work-path/PBMC14k/MICA/micaOutput -minr 0.1, -maxr 9.0 -ss 0.05 -nw 40
+mica ge -i /work-path/PBMC14k/MICA/micaInput.txt -o /work-path/PBMC14k/MICA/micaOutput -minr 0.1 -maxr 9.0 -ss 0.05 -nw 40
 ```
 
 This command will generate the clustering results of multiple resolutions, from 0.1 to 9.0, with a step size of 0.05.

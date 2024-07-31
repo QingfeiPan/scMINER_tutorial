@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
+  <title>9.1 Generate SJARACNe input files | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
   <meta name="description" content="A tutorial of scMINER" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta property="og:title" content="9.1 Generate SJARACNe input files | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A tutorial of scMINER" />
   <meta name="github-repo" content="QingfeiPan/scMINER_qpan" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta name="twitter:title" content="9.1 Generate SJARACNe input files | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   
   <meta name="twitter:description" content="A tutorial of scMINER" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="filter-the-sparse-eset-object.html"/>
-<link rel="next" href="mi-based-clustering-analysis.html"/>
+<link rel="prev" href="network-inference.html"/>
+<link rel="next" href="run-sjaracne.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -251,39 +251,40 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="data-normalization" class="section level1 hasAnchor" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Data normalization<a href="data-normalization.html#data-normalization" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>In this chapter, we will introduce the method of data normalization in scMINER.</p>
-<p>We recommend to use <strong><code>log2CPM</code></strong> method for normalization: the raw counts in each cell are normalized to a library size of 1 million, followed by log2 transformation.</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="data-normalization.html#cb69-1" tabindex="-1"></a>pbmc14k_log2cpm.eset <span class="ot">&lt;-</span> <span class="fu">normalizeSparseEset</span>(pbmc14k_filtered.eset, <span class="at">scale_factor =</span> <span class="dv">1000000</span>, <span class="at">log_base =</span> <span class="dv">2</span>, <span class="at">log_pseudoCount =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## Done! The data matrix of eset has been normalized and log-transformed!
-## The returned eset contains: 8846 genes, 13605 cells.</code></pre>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="data-normalization.html#cb71-1" tabindex="-1"></a><span class="fu">exprs</span>(pbmc14k_log2cpm.eset)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
-<pre><code>## 5 x 5 Matrix of class &quot;dgeMatrix&quot;
-##           CACTTTGACGCAAT GTTACGGAAACGAA CACTTATGAGTCGT GCATGTGATTCTGT
-## LINC00115              0        0.00000              0              0
-## NOC2L                  0        0.00000              0              0
-## HES4                   0        0.00000              0              0
-## ISG15                  0       10.05794              0              0
-## C1orf159               0        0.00000              0              0
-##           TAGAATACGTATCG
-## LINC00115              0
-## NOC2L                  0
-## HES4                   0
-## ISG15                  0
-## C1orf159               0</code></pre>
-<p>This normalized and log-transformed SparseEset object can be directly used for Mutual Information-based clustering, network inference and other downstream analysis.</p>
-<p>Don’t forget to save the SparseEset object after data normalization.</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="data-normalization.html#cb73-1" tabindex="-1"></a><span class="fu">saveRDS</span>(pbmc14k_log2cpm.eset, <span class="at">file =</span> <span class="st">&quot;/your-path/PBMC14k/DATA/pbmc14k_log2CPM_annotated.rds&quot;</span>)</span></code></pre></div>
-
+<div id="generate-sjaracne-input-files" class="section level2 hasAnchor" number="9.1">
+<h2><span class="header-section-number">9.1</span> Generate SJARACNe input files<a href="generate-sjaracne-input-files.html#generate-sjaracne-input-files" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The network inference is usually conducted in a <strong>cluster-</strong> or <strong>cell type-specific</strong> basis. Given the column names for grouping, <code>generateSJARACNeInput()</code> will create a folder for each group named by the group label.</p>
+<p><strong><em>IMPORTANT NOTE</em></strong>: Any <strong>illegal characters in path</strong> in group labels may cause issues in subsequent analysis. To avoid it, scMINER only accept letters(A-Za-z), numbers(0-9), underscores(’_‘) and periods(’.’).</p>
+<p>In this case, the true labels of cell type are available, so we use them to define the groups for network inference.</p>
+<div class="sourceCode" id="cb111"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb111-1"><a href="generate-sjaracne-input-files.html#cb111-1" tabindex="-1"></a><span class="do">## Columns with any illegal characters can not be used for groupping</span></span>
+<span id="cb111-2"><a href="generate-sjaracne-input-files.html#cb111-2" tabindex="-1"></a><span class="fu">generateSJARACNeInput</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">group_name =</span> <span class="st">&quot;trueLabel&quot;</span>, <span class="at">sjaracne_dir =</span> <span class="st">&quot;/work-path/PBMC14k/SJARACNe&quot;</span>, <span class="at">species_type =</span> <span class="st">&quot;hg&quot;</span>, <span class="at">driver_type =</span> <span class="st">&quot;TF_SIG&quot;</span>, <span class="at">downSample_N =</span> <span class="cn">NULL</span>)</span></code></pre></div>
+<p>For big datasets, <code>generateSJARACNeInput()</code> provides an argument, <code>downSample_N</code>, to allow users to down sample size of each group. The default value of <code>downSample_N</code> is 1,000, any group with &gt;= 1,000 cells will be down-sample to 1,000.</p>
+<div class="sourceCode" id="cb112"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb112-1"><a href="generate-sjaracne-input-files.html#cb112-1" tabindex="-1"></a><span class="do">## one folder for each group</span></span>
+<span id="cb112-2"><a href="generate-sjaracne-input-files.html#cb112-2" tabindex="-1"></a><span class="fu">list.dirs</span>(<span class="fu">system.file</span>(<span class="st">&quot;extdata/demo_pbmc14k/PBMC14k/SJARACNe&quot;</span>, <span class="at">package =</span> <span class="st">&quot;scMINER&quot;</span>), <span class="at">full.names =</span> <span class="cn">FALSE</span>, <span class="at">recursive =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;B&quot;        &quot;CD4TCM&quot;   &quot;CD4TN&quot;    &quot;CD4Treg&quot;  &quot;CD8TN&quot;    &quot;Monocyte&quot; &quot;NK&quot;</code></pre>
+<div class="sourceCode" id="cb114"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb114-1"><a href="generate-sjaracne-input-files.html#cb114-1" tabindex="-1"></a><span class="do">## file structure of each folder</span></span>
+<span id="cb114-2"><a href="generate-sjaracne-input-files.html#cb114-2" tabindex="-1"></a><span class="fu">list.files</span>(<span class="fu">system.file</span>(<span class="st">&quot;extdata/demo_pbmc14k/PBMC14k/SJARACNe/B&quot;</span>, <span class="at">package =</span> <span class="st">&quot;scMINER&quot;</span>), <span class="at">full.names =</span> <span class="cn">FALSE</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">include.dirs =</span> <span class="cn">FALSE</span>, <span class="at">pattern =</span> <span class="st">&quot;[^consensus_network_ncol_.txt]&quot;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;B.8572_1902.exp.txt&quot;     &quot;config_cwlexec.json&quot;    
+## [3] &quot;runSJARACNe.sh&quot;          &quot;SIG/B.4148_1902.sig.txt&quot;
+## [5] &quot;TF/B.835_1902.tf.txt&quot;</code></pre>
+<p>The standard input files of SJARACNe, for each group, include:</p>
+<ul>
+<li>a “<strong><code>.exp.txt</code></strong>” file: a tab-separated genes/transcripts/proteins by cells/samples expression matrix with the first two columns being ID and symbol.</li>
+<li>a “<strong><code>TF</code></strong>” folder containing a “<strong><code>.tf.txt</code></strong>” file: a list of significant gene/transcript/protein IDs of TF drivers.</li>
+<li>a “<strong><code>SIG</code></strong>” folder containing a “<strong><code>.sig.txt</code></strong>” file: a list of significant gene/transcript/protein IDs of SIG drivers.</li>
+<li>a bash script (<strong><code>runSJARACNe.sh</code></strong>) to run SJARACNe. Further modification is needed to run it.</li>
+<li>a json file (<strong><code>config_cwlexec.json</code></strong>) containing parameters to run SJARACNe.</li>
+</ul>
+<p>Usually, the ground truth of cell types is not available. Then the <strong>cluster labels</strong>, or <strong>cell type annotations of the clusters</strong>, can be used for grouping in network rewiring, since it’s expected that cells with same cluster label/annotated cell type are of similar gene expression profiles. To generate from annotated cell types, you can run:</p>
+<div class="sourceCode" id="cb116"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb116-1"><a href="generate-sjaracne-input-files.html#cb116-1" tabindex="-1"></a><span class="fu">generateSJARACNeInput</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">group_name =</span> <span class="st">&quot;cell_type&quot;</span>, <span class="at">sjaracne_dir =</span> <span class="st">&quot;/work-path/PBMC14k/SJARACNe/bycelltype&quot;</span>, <span class="at">species_type =</span> <span class="st">&quot;hg&quot;</span>, <span class="at">driver_type =</span> <span class="st">&quot;TF_SIG&quot;</span>)</span></code></pre></div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="filter-the-sparse-eset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="mi-based-clustering-analysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="network-inference.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="run-sjaracne.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -314,7 +315,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/06-data-normalization.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/09-network-inference.Rmd",
 "text": "Edit"
 },
 "history": {

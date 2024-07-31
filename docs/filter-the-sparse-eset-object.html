@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
+  <title>5.2 Filter the sparse eset object | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
   <meta name="description" content="A tutorial of scMINER" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta property="og:title" content="5.2 Filter the sparse eset object | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A tutorial of scMINER" />
   <meta name="github-repo" content="QingfeiPan/scMINER_qpan" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta name="twitter:title" content="5.2 Filter the sparse eset object | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   
   <meta name="twitter:description" content="A tutorial of scMINER" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="filter-the-sparse-eset-object.html"/>
-<link rel="next" href="mi-based-clustering-analysis.html"/>
+<link rel="prev" href="qc-report.html"/>
+<link rel="next" href="data-normalization.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -251,39 +251,64 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="data-normalization" class="section level1 hasAnchor" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Data normalization<a href="data-normalization.html#data-normalization" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>In this chapter, we will introduce the method of data normalization in scMINER.</p>
-<p>We recommend to use <strong><code>log2CPM</code></strong> method for normalization: the raw counts in each cell are normalized to a library size of 1 million, followed by log2 transformation.</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="data-normalization.html#cb69-1" tabindex="-1"></a>pbmc14k_log2cpm.eset <span class="ot">&lt;-</span> <span class="fu">normalizeSparseEset</span>(pbmc14k_filtered.eset, <span class="at">scale_factor =</span> <span class="dv">1000000</span>, <span class="at">log_base =</span> <span class="dv">2</span>, <span class="at">log_pseudoCount =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## Done! The data matrix of eset has been normalized and log-transformed!
-## The returned eset contains: 8846 genes, 13605 cells.</code></pre>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="data-normalization.html#cb71-1" tabindex="-1"></a><span class="fu">exprs</span>(pbmc14k_log2cpm.eset)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
-<pre><code>## 5 x 5 Matrix of class &quot;dgeMatrix&quot;
-##           CACTTTGACGCAAT GTTACGGAAACGAA CACTTATGAGTCGT GCATGTGATTCTGT
-## LINC00115              0        0.00000              0              0
-## NOC2L                  0        0.00000              0              0
-## HES4                   0        0.00000              0              0
-## ISG15                  0       10.05794              0              0
-## C1orf159               0        0.00000              0              0
-##           TAGAATACGTATCG
-## LINC00115              0
-## NOC2L                  0
-## HES4                   0
-## ISG15                  0
-## C1orf159               0</code></pre>
-<p>This normalized and log-transformed SparseEset object can be directly used for Mutual Information-based clustering, network inference and other downstream analysis.</p>
-<p>Don’t forget to save the SparseEset object after data normalization.</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="data-normalization.html#cb73-1" tabindex="-1"></a><span class="fu">saveRDS</span>(pbmc14k_log2cpm.eset, <span class="at">file =</span> <span class="st">&quot;/your-path/PBMC14k/DATA/pbmc14k_log2CPM_annotated.rds&quot;</span>)</span></code></pre></div>
+<div id="filter-the-sparse-eset-object" class="section level2 hasAnchor" number="5.2">
+<h2><span class="header-section-number">5.2</span> Filter the sparse eset object<a href="filter-the-sparse-eset-object.html#filter-the-sparse-eset-object" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>From the quality control report generated above, we have got a better sense about the data quality and the cutoffs to use for filtration. scMINER provides a function, filterSparseEset() for this purpose, and it can work in two modes:</p>
+<ul>
+<li><strong><code>auto</code></strong>: in this mode, scMINER will use the cutoffs estimated by Median ± 3*MAD (maximum absolute deviation). Based on our tests, in most cases, this mode works well with the matrix of both raw UMI counts and TPM values.</li>
+<li><strong><code>manual</code></strong>: in this mode, the users can manually specify the cutoffs, both low and high, of all 5 metrics: nUMI, nFeature, pctMito, pctSpikeIn for cells, and nCell for genes. No cells or features would be removed under the default cutoffs of each metrics.</li>
+</ul>
+<p>No matter which mode to use, filterSparseEset() returns a summary table with detailed information of filtration statistics. You can refer to it and adjust the cutoffs accordingly.</p>
+<div id="data-filtration-with-auto-mode" class="section level3 hasAnchor" number="5.2.1">
+<h3><span class="header-section-number">5.2.1</span> Data filtration with auto mode<a href="filter-the-sparse-eset-object.html#data-filtration-with-auto-mode" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>To conduct the filtering using the cutoffs recommended by scMINER:</p>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="filter-the-sparse-eset-object.html#cb61-1" tabindex="-1"></a><span class="do">## Filter eSet under the auto mode</span></span>
+<span id="cb61-2"><a href="filter-the-sparse-eset-object.html#cb61-2" tabindex="-1"></a>pbmc14k_filtered.eset <span class="ot">&lt;-</span> <span class="fu">filterSparseEset</span>(pbmc14k_raw.eset, <span class="at">filter_mode =</span> <span class="st">&quot;auto&quot;</span>, <span class="at">filter_type =</span> <span class="st">&quot;both&quot;</span>)</span></code></pre></div>
+<pre><code>## Checking the availability of the 5 metrics (&#39;nCell&#39;, &#39;nUMI&#39;, &#39;nFeature&#39;, &#39;pctMito&#39;, &#39;pctSpikeIn&#39;) used for filtration ...
+## Checking passed! All 5 metrics are available.
+## Filtration is done!</code></pre>
+<pre><code>## Filtration Summary:</code></pre>
+<pre><code>##  8846/17986 genes passed!</code></pre>
+<pre><code>##  13605/14000 cells passed!</code></pre>
+<pre><code>## 
+## For more details:
+##  Gene filtration statistics:
+##      Metrics     nCell
+##      Cutoff_Low  70
+##      Cutoff_High Inf
+##      Gene_total  17986
+##      Gene_passed 8846(49.18%)
+##      Gene_failed 9140(50.82%)
+## 
+##  Cell filtration statistics:
+##      Metrics     nUMI        nFeature    pctMito     pctSpikeIn  Combined
+##      Cutoff_Low  458     221     0       0       NA
+##      Cutoff_High 3694        Inf     0.0408      0.0000      NA
+##      Cell_total  14000       14000       14000       14000       14000
+##      Cell_passed 13826(98.76%)   14000(100.00%)  13778(98.41%)   14000(100.00%)  13605(97.18%)
+##      Cell_failed 174(1.24%)  0(0.00%)    222(1.59%)  0(0.00%)    395(2.82%)</code></pre>
+<p>In some cases, you may find that most of the cutoffs generated by the auto mode are good, except one or two. Though there is no ‘hybrid’ mode, scMINER does allow you to customize some of the cutoffs generated by the auto mode. This can be easily done by adding the cutoffs you would customize under the auto mode:</p>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="filter-the-sparse-eset-object.html#cb67-1" tabindex="-1"></a><span class="do">## Filter eSet under the auto mode, with customized values</span></span>
+<span id="cb67-2"><a href="filter-the-sparse-eset-object.html#cb67-2" tabindex="-1"></a>pbmc14k_filtered.eset <span class="ot">&lt;-</span> <span class="fu">filterSparseEset</span>(pbmc14k_raw.eset, <span class="at">filter_mode =</span> <span class="st">&quot;auto&quot;</span>, <span class="at">filter_type =</span> <span class="st">&quot;both&quot;</span>, <span class="at">gene.nCell_min =</span> <span class="dv">5</span>)</span></code></pre></div>
+<p>With the code above, scMINER will filter the eSet using all of the cutoffs generated by auto mode, except <code>gene.nCell_min</code>.</p>
+</div>
+<div id="data-filtration-with-manual-mode" class="section level3 hasAnchor" number="5.2.2">
+<h3><span class="header-section-number">5.2.2</span> Data filtration with manual mode<a href="filter-the-sparse-eset-object.html#data-filtration-with-manual-mode" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>To apply the self-customized cutoffs:</p>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb68-1"><a href="filter-the-sparse-eset-object.html#cb68-1" tabindex="-1"></a><span class="do">## Filter eSet under the manual mode</span></span>
+<span id="cb68-2"><a href="filter-the-sparse-eset-object.html#cb68-2" tabindex="-1"></a>pbmc14k_filtered.eset <span class="ot">&lt;-</span> <span class="fu">filterSparseEset</span>(pbmc14k_raw.eset, <span class="at">filter_mode =</span> <span class="st">&quot;manual&quot;</span>, <span class="at">filter_type =</span> <span class="st">&quot;both&quot;</span>, <span class="at">gene.nCell_min =</span> <span class="dv">10</span>, <span class="at">cell.nUMI_min =</span> <span class="dv">500</span>, <span class="at">cell.nUMI_max =</span> <span class="dv">6500</span>, <span class="at">cell.nFeature_min =</span> <span class="dv">200</span>, <span class="at">cell.nFeature_max =</span> <span class="dv">2500</span>, <span class="at">cell.pctMito_max =</span> <span class="fl">0.1</span>)</span></code></pre></div>
+<p>For any unspecified cutoff arguments, like <code>gene.nCell_max</code>, <code>filterSparseEset()</code> will automatically assign the default values to them. The default values of any cutoff argument would not filter out any cells or features. So, if you want to skip some metrics, just leave the cutoffs of them unspecified. For example, in the codes above, <code>gene.nCell_max</code> is unspecified. Then <code>filterSparseEset()</code> wil assign the default value, which is <code>Inf</code>, to it. No features would be filtered out by this argument.</p>
 
 </div>
+</div>
+<!-- </div> -->
             </section>
 
           </div>
         </div>
       </div>
-<a href="filter-the-sparse-eset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="mi-based-clustering-analysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="qc-report.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="data-normalization.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -314,7 +339,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/06-data-normalization.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/05-data-filtration.Rmd",
 "text": "Edit"
 },
 "history": {

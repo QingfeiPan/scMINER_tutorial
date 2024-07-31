@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
+  <title>4.1 Solely from the gene expression matrix | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
   <meta name="description" content="A tutorial of scMINER" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta property="og:title" content="4.1 Solely from the gene expression matrix | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A tutorial of scMINER" />
   <meta name="github-repo" content="QingfeiPan/scMINER_qpan" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta name="twitter:title" content="4.1 Solely from the gene expression matrix | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   
   <meta name="twitter:description" content="A tutorial of scMINER" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="filter-the-sparse-eset-object.html"/>
-<link rel="next" href="mi-based-clustering-analysis.html"/>
+<link rel="prev" href="create-sparseeset-object.html"/>
+<link rel="next" href="using-self-customized-meta-data.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -251,39 +251,64 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="data-normalization" class="section level1 hasAnchor" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Data normalization<a href="data-normalization.html#data-normalization" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>In this chapter, we will introduce the method of data normalization in scMINER.</p>
-<p>We recommend to use <strong><code>log2CPM</code></strong> method for normalization: the raw counts in each cell are normalized to a library size of 1 million, followed by log2 transformation.</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="data-normalization.html#cb69-1" tabindex="-1"></a>pbmc14k_log2cpm.eset <span class="ot">&lt;-</span> <span class="fu">normalizeSparseEset</span>(pbmc14k_filtered.eset, <span class="at">scale_factor =</span> <span class="dv">1000000</span>, <span class="at">log_base =</span> <span class="dv">2</span>, <span class="at">log_pseudoCount =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## Done! The data matrix of eset has been normalized and log-transformed!
-## The returned eset contains: 8846 genes, 13605 cells.</code></pre>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="data-normalization.html#cb71-1" tabindex="-1"></a><span class="fu">exprs</span>(pbmc14k_log2cpm.eset)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
-<pre><code>## 5 x 5 Matrix of class &quot;dgeMatrix&quot;
-##           CACTTTGACGCAAT GTTACGGAAACGAA CACTTATGAGTCGT GCATGTGATTCTGT
-## LINC00115              0        0.00000              0              0
-## NOC2L                  0        0.00000              0              0
-## HES4                   0        0.00000              0              0
-## ISG15                  0       10.05794              0              0
-## C1orf159               0        0.00000              0              0
-##           TAGAATACGTATCG
-## LINC00115              0
-## NOC2L                  0
-## HES4                   0
-## ISG15                  0
-## C1orf159               0</code></pre>
-<p>This normalized and log-transformed SparseEset object can be directly used for Mutual Information-based clustering, network inference and other downstream analysis.</p>
-<p>Don’t forget to save the SparseEset object after data normalization.</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="data-normalization.html#cb73-1" tabindex="-1"></a><span class="fu">saveRDS</span>(pbmc14k_log2cpm.eset, <span class="at">file =</span> <span class="st">&quot;/your-path/PBMC14k/DATA/pbmc14k_log2CPM_annotated.rds&quot;</span>)</span></code></pre></div>
-
+<div id="solely-from-the-gene-expression-matrix" class="section level2 hasAnchor" number="4.1">
+<h2><span class="header-section-number">4.1</span> Solely from the gene expression matrix<a href="solely-from-the-gene-expression-matrix.html#solely-from-the-gene-expression-matrix" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>This is <strong>the most commonly used way</strong> to create the sparse eSet object with scMINER:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="solely-from-the-gene-expression-matrix.html#cb20-1" tabindex="-1"></a>pbmc14k_raw.eset <span class="ot">&lt;-</span> <span class="fu">createSparseEset</span>(<span class="at">input_matrix =</span> pbmc14k_rawCount, <span class="at">projectID =</span> <span class="st">&quot;PBMC14k&quot;</span>, <span class="at">addMetaData =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## Creating sparse eset from the input_matrix ...
+##  Adding meta data based on input_matrix ...
+## Done! The sparse eset has been generated: 17986 genes, 14000 cells.</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="solely-from-the-gene-expression-matrix.html#cb22-1" tabindex="-1"></a>pbmc14k_raw.eset</span></code></pre></div>
+<pre><code>## SparseExpressionSet (storageMode: environment)
+## assayData: 17986 features, 14000 samples 
+##   element names: exprs 
+## protocolData: none
+## phenoData
+##   sampleNames: CACTTTGACGCAAT GTTACGGAAACGAA ... ACGTGCCTTAAAGG (14000
+##     total)
+##   varLabels: CellID projectID ... pctSpikeIn (6 total)
+##   varMetadata: labelDescription
+## featureData
+##   featureNames: AL627309.1 AP006222.2 ... SRSF10.1 (17986 total)
+##   fvarLabels: GeneSymbol nCell
+##   fvarMetadata: labelDescription
+## experimentData: use &#39;experimentData(object)&#39;
+## Annotation:</code></pre>
+<ul>
+<li><strong>input_matrix</strong>: it’s usually but not limited to a sparse matrix of raw UMI count.
+<ul>
+<li>As for the data format, it accepts <strong><code>dgCMatrix</code></strong>, <strong><code>dgTMatrix</code></strong>, <strong><code>dgeMatrix</code></strong>, <strong><code>matrix</code></strong>, <strong><code>data.frame</code></strong>.</li>
+<li>As for the type of quantification measures, it takes <strong>raw counts</strong>, normalized counts (e.g. <strong><code>CPM</code></strong> or <strong><code>CP10k</code></strong>), <strong><code>TPM</code></strong> (Transcripts Per Million), <strong><code>FPKM/RPKM</code></strong> (Fragments/Reads Per Kilobase of transcript per Million) and others.</li>
+<li><strong>What if a data frame object is given to it?</strong> When a non-matrix table is passed to <code>input_matrix</code> argument, the <code>createSparseEset()</code> function will automatically convert it to a matrix. And it the matrix, either converted from other format or directly passed from users, is not sparse. <code>createSparseEset()</code> will automatically convert it into sparse matrix, by default. This is controlled by another argument called <code>do.sparseConversion</code>, the default of which is <code>TRUE</code>. It’s not recommended but the users can set it as <code>FALSE</code> to disable the conversion. Then <code>createSparseEset()</code> will create the eSet based on the regular matrix.</li>
+</ul></li>
+<li><strong>addMetaData</strong>: when this argument is set <code>TRUE</code> (this is the default), <code>createSparseEset()</code> will automatically generate 5 statistics, 4 for cells and 1 for features, and add them into the <code>phenoData</code> and <code>featureData</code> slots. These 5 statistics will be used in quality control and data filtration.</li>
+</ul>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="solely-from-the-gene-expression-matrix.html#cb24-1" tabindex="-1"></a><span class="do">## check the phenoData: metadata of cells</span></span>
+<span id="cb24-2"><a href="solely-from-the-gene-expression-matrix.html#cb24-2" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">pData</span>(pbmc14k_raw.eset))</span></code></pre></div>
+<pre><code>##                        CellID projectID nUMI nFeature    pctMito pctSpikeIn
+## CACTTTGACGCAAT CACTTTGACGCAAT   PBMC14k  764      354 0.01832461          0
+## GTTACGGAAACGAA GTTACGGAAACGAA   PBMC14k  956      442 0.01569038          0
+## AGTCACGACAGGAG AGTCACGACAGGAG   PBMC14k 7940     2163 0.01977330          0
+## TTCGAGGACCAGTA TTCGAGGACCAGTA   PBMC14k 4177     1277 0.01149150          0
+## CACTTATGAGTCGT CACTTATGAGTCGT   PBMC14k  629      323 0.02066773          0
+## GCATGTGATTCTGT GCATGTGATTCTGT   PBMC14k  875      427 0.02628571          0</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="solely-from-the-gene-expression-matrix.html#cb26-1" tabindex="-1"></a><span class="do">## check the featureData: metadata of features</span></span>
+<span id="cb26-2"><a href="solely-from-the-gene-expression-matrix.html#cb26-2" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">fData</span>(pbmc14k_raw.eset))</span></code></pre></div>
+<pre><code>##                  GeneSymbol nCell
+## AL627309.1       AL627309.1    50
+## AP006222.2       AP006222.2     2
+## RP11-206L10.3 RP11-206L10.3     1
+## RP11-206L10.2 RP11-206L10.2    33
+## RP11-206L10.9 RP11-206L10.9    17
+## LINC00115         LINC00115   115</code></pre>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="filter-the-sparse-eset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="mi-based-clustering-analysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="create-sparseeset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="using-self-customized-meta-data.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -314,7 +339,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/06-data-normalization.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/04-create-sparseeset.Rmd",
 "text": "Edit"
 },
 "history": {

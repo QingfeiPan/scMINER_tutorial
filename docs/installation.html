@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
+  <title>2.1 Installation | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
   <meta name="description" content="A tutorial of scMINER" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta property="og:title" content="2.1 Installation | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A tutorial of scMINER" />
   <meta name="github-repo" content="QingfeiPan/scMINER_qpan" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta name="twitter:title" content="2.1 Installation | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   
   <meta name="twitter:description" content="A tutorial of scMINER" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="filter-the-sparse-eset-object.html"/>
-<link rel="next" href="mi-based-clustering-analysis.html"/>
+<link rel="prev" href="get-started.html"/>
+<link rel="next" href="demo-data.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -251,39 +251,45 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="data-normalization" class="section level1 hasAnchor" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Data normalization<a href="data-normalization.html#data-normalization" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>In this chapter, we will introduce the method of data normalization in scMINER.</p>
-<p>We recommend to use <strong><code>log2CPM</code></strong> method for normalization: the raw counts in each cell are normalized to a library size of 1 million, followed by log2 transformation.</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="data-normalization.html#cb69-1" tabindex="-1"></a>pbmc14k_log2cpm.eset <span class="ot">&lt;-</span> <span class="fu">normalizeSparseEset</span>(pbmc14k_filtered.eset, <span class="at">scale_factor =</span> <span class="dv">1000000</span>, <span class="at">log_base =</span> <span class="dv">2</span>, <span class="at">log_pseudoCount =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## Done! The data matrix of eset has been normalized and log-transformed!
-## The returned eset contains: 8846 genes, 13605 cells.</code></pre>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="data-normalization.html#cb71-1" tabindex="-1"></a><span class="fu">exprs</span>(pbmc14k_log2cpm.eset)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
-<pre><code>## 5 x 5 Matrix of class &quot;dgeMatrix&quot;
-##           CACTTTGACGCAAT GTTACGGAAACGAA CACTTATGAGTCGT GCATGTGATTCTGT
-## LINC00115              0        0.00000              0              0
-## NOC2L                  0        0.00000              0              0
-## HES4                   0        0.00000              0              0
-## ISG15                  0       10.05794              0              0
-## C1orf159               0        0.00000              0              0
-##           TAGAATACGTATCG
-## LINC00115              0
-## NOC2L                  0
-## HES4                   0
-## ISG15                  0
-## C1orf159               0</code></pre>
-<p>This normalized and log-transformed SparseEset object can be directly used for Mutual Information-based clustering, network inference and other downstream analysis.</p>
-<p>Don’t forget to save the SparseEset object after data normalization.</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="data-normalization.html#cb73-1" tabindex="-1"></a><span class="fu">saveRDS</span>(pbmc14k_log2cpm.eset, <span class="at">file =</span> <span class="st">&quot;/your-path/PBMC14k/DATA/pbmc14k_log2CPM_annotated.rds&quot;</span>)</span></code></pre></div>
-
+<div id="installation" class="section level2 hasAnchor" number="2.1">
+<h2><span class="header-section-number">2.1</span> Installation<a href="installation.html#installation" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>scMINER framework is mainly developed with R for its advantages in statistical analysis and data visualization. It also includes two components, <a href="https://github.com/jyyulab/MICA">MICA</a> and <a href="https://github.com/jyyulab/SJARACNe">SJARACNe</a>, that are developed with Python to take its strengths in calculation speed and memory consumption, since mutual information estimation of large-scale scRNA-seq data is usually compute-intensive.</p>
+<p>Please install all three components for the full access to scMINER framework.</p>
+<div id="install-scminer-r-package" class="section level3 unnumbered hasAnchor">
+<h3>Install scMINER R package<a href="installation.html#install-scminer-r-package" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The scMINER R package requires R 4.2.3 or newer, and can be installed from <a href="https://github.com/">GitHub</a> with:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="installation.html#cb1-1" tabindex="-1"></a><span class="co"># install.packages(&quot;devtools&quot;)</span></span>
+<span id="cb1-2"><a href="installation.html#cb1-2" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;https://github.com/jyyulab/scMINER.git@dev-qpan&quot;</span>)</span></code></pre></div>
+</div>
+<div id="install-mica-and-sjaracne" class="section level3 unnumbered hasAnchor">
+<h3>Install MICA and SJARACNe<a href="installation.html#install-mica-and-sjaracne" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The recommended method to install MICA and SJARACNe is to use <a href="https://conda.io/projects/conda/en/latest/">conda</a> dependency manager:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="installation.html#cb2-1" tabindex="-1"></a><span class="co">## setup conda env</span></span>
+<span id="cb2-2"><a href="installation.html#cb2-2" tabindex="-1"></a><span class="ex">conda</span> create <span class="at">-n</span> scminer python=3.9.2                <span class="co"># Create a python virtual environment</span></span>
+<span id="cb2-3"><a href="installation.html#cb2-3" tabindex="-1"></a><span class="bu">source</span> activate scminer                             <span class="co"># Activate the virtual environment</span></span>
+<span id="cb2-4"><a href="installation.html#cb2-4" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="installation.html#cb2-5" tabindex="-1"></a><span class="co">## install MICA</span></span>
+<span id="cb2-6"><a href="installation.html#cb2-6" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/jyyulab/MICA           <span class="co"># Clone the MICA repo</span></span>
+<span id="cb2-7"><a href="installation.html#cb2-7" tabindex="-1"></a><span class="bu">cd</span> MICA                                             <span class="co"># Switch to the MICA root directory</span></span>
+<span id="cb2-8"><a href="installation.html#cb2-8" tabindex="-1"></a><span class="ex">pip</span> install .                                       <span class="co"># Install MICA and its dependencies</span></span>
+<span id="cb2-9"><a href="installation.html#cb2-9" tabindex="-1"></a><span class="ex">mica</span> <span class="at">-h</span>                                             <span class="co"># Check if MICA works</span></span>
+<span id="cb2-10"><a href="installation.html#cb2-10" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="installation.html#cb2-11" tabindex="-1"></a><span class="co">## install SJARACNE</span></span>
+<span id="cb2-12"><a href="installation.html#cb2-12" tabindex="-1"></a><span class="bu">cd</span> ..                                               <span class="co"># Switch to conda env folder</span></span>
+<span id="cb2-13"><a href="installation.html#cb2-13" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/jyyulab/SJARACNe.git   <span class="co"># Clone the SJARACNe repo</span></span>
+<span id="cb2-14"><a href="installation.html#cb2-14" tabindex="-1"></a><span class="bu">cd</span> SJARACNe                                         <span class="co"># Switch to the MICA root directory</span></span>
+<span id="cb2-15"><a href="installation.html#cb2-15" tabindex="-1"></a><span class="ex">python</span> setup.py build                               <span class="co"># Build SJARACNe binary</span></span>
+<span id="cb2-16"><a href="installation.html#cb2-16" tabindex="-1"></a><span class="ex">python</span> setup.py install                             <span class="co"># Build SJARACNe binary</span></span>
+<span id="cb2-17"><a href="installation.html#cb2-17" tabindex="-1"></a><span class="ex">sjaracne</span> <span class="at">-h</span>                                         <span class="co"># Check if SJARACNe works</span></span></code></pre></div>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="filter-the-sparse-eset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="mi-based-clustering-analysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="get-started.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="demo-data.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -314,7 +320,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/06-data-normalization.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/02-get-started.Rmd",
 "text": "Edit"
 },
 "history": {

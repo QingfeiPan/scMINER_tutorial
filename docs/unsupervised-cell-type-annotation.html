@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
+  <title>8.2 Unsupervised cell type annotation | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
   <meta name="description" content="A tutorial of scMINER" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta property="og:title" content="8.2 Unsupervised cell type annotation | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A tutorial of scMINER" />
   <meta name="github-repo" content="QingfeiPan/scMINER_qpan" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta name="twitter:title" content="8.2 Unsupervised cell type annotation | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   
   <meta name="twitter:description" content="A tutorial of scMINER" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="filter-the-sparse-eset-object.html"/>
-<link rel="next" href="mi-based-clustering-analysis.html"/>
+<link rel="prev" href="supervised-cell-type-annotation.html"/>
+<link rel="next" href="add-cell-type-annotations-to-sparseexpressionset-object.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -251,39 +251,77 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="data-normalization" class="section level1 hasAnchor" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Data normalization<a href="data-normalization.html#data-normalization" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>In this chapter, we will introduce the method of data normalization in scMINER.</p>
-<p>We recommend to use <strong><code>log2CPM</code></strong> method for normalization: the raw counts in each cell are normalized to a library size of 1 million, followed by log2 transformation.</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="data-normalization.html#cb69-1" tabindex="-1"></a>pbmc14k_log2cpm.eset <span class="ot">&lt;-</span> <span class="fu">normalizeSparseEset</span>(pbmc14k_filtered.eset, <span class="at">scale_factor =</span> <span class="dv">1000000</span>, <span class="at">log_base =</span> <span class="dv">2</span>, <span class="at">log_pseudoCount =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## Done! The data matrix of eset has been normalized and log-transformed!
-## The returned eset contains: 8846 genes, 13605 cells.</code></pre>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="data-normalization.html#cb71-1" tabindex="-1"></a><span class="fu">exprs</span>(pbmc14k_log2cpm.eset)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
-<pre><code>## 5 x 5 Matrix of class &quot;dgeMatrix&quot;
-##           CACTTTGACGCAAT GTTACGGAAACGAA CACTTATGAGTCGT GCATGTGATTCTGT
-## LINC00115              0        0.00000              0              0
-## NOC2L                  0        0.00000              0              0
-## HES4                   0        0.00000              0              0
-## ISG15                  0       10.05794              0              0
-## C1orf159               0        0.00000              0              0
-##           TAGAATACGTATCG
-## LINC00115              0
-## NOC2L                  0
-## HES4                   0
-## ISG15                  0
-## C1orf159               0</code></pre>
-<p>This normalized and log-transformed SparseEset object can be directly used for Mutual Information-based clustering, network inference and other downstream analysis.</p>
-<p>Don’t forget to save the SparseEset object after data normalization.</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="data-normalization.html#cb73-1" tabindex="-1"></a><span class="fu">saveRDS</span>(pbmc14k_log2cpm.eset, <span class="at">file =</span> <span class="st">&quot;/your-path/PBMC14k/DATA/pbmc14k_log2CPM_annotated.rds&quot;</span>)</span></code></pre></div>
-
+<div id="unsupervised-cell-type-annotation" class="section level2 hasAnchor" number="8.2">
+<h2><span class="header-section-number">8.2</span> Unsupervised cell type annotation<a href="unsupervised-cell-type-annotation.html#unsupervised-cell-type-annotation" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Existing studies in the same or similar contexts are not always available, and there is a significant concern regarding the reliability of reference studies. This reliability largely depends on the expertise of the original authors who defined the markers and assigned the cell types. Therefore, we strongly encourage users to also try unsupervised methods, which can serve as a means of cross-validation.</p>
+<p>scMINER provides a function, <code>getDE()</code>, to perform the differential expression analysis and identify the markers of each cluster. The <code>getDE()</code> function supports three different methods to perform the differential expression analysis, <code>limma</code>, <code>wilcoxon</code> and <code>t.test</code>. And it allows the users to define the groups to compare in a flexible way:</p>
+<div class="sourceCode" id="cb98"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb98-1"><a href="unsupervised-cell-type-annotation.html#cb98-1" tabindex="-1"></a><span class="do">## 1. To perform differential expression analysis in a 1-vs-rest manner for all groups</span></span>
+<span id="cb98-2"><a href="unsupervised-cell-type-annotation.html#cb98-2" tabindex="-1"></a>de_res1 <span class="ot">&lt;-</span> <span class="fu">getDE</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset[<span class="dv">500</span>,], <span class="at">group_by =</span> <span class="st">&quot;clusterID&quot;</span>, <span class="at">use_method =</span> <span class="st">&quot;limma&quot;</span>)</span></code></pre></div>
+<pre><code>## 7 groups were found in group_by column [ clusterID ].
+## Since no group was specified, the differential analysis will be conducted among all groups in the group_by column [ clusterID ] in the 1-vs-rest manner.
+##   1 / 7 : group 1 ( 1 ) vs the rest...
+##   2505 cells were found for g1.
+##   11100 cells were found for g0.
+##   2 / 7 : group 1 ( 2 ) vs the rest...
+##   2022 cells were found for g1.
+##   11583 cells were found for g0.
+##   3 / 7 : group 1 ( 3 ) vs the rest...
+##   2014 cells were found for g1.
+##   11591 cells were found for g0.
+##   4 / 7 : group 1 ( 4 ) vs the rest...
+##   1918 cells were found for g1.
+##   11687 cells were found for g0.
+##   5 / 7 : group 1 ( 5 ) vs the rest...
+##   1912 cells were found for g1.
+##   11693 cells were found for g0.
+##   6 / 7 : group 1 ( 6 ) vs the rest...
+##   1786 cells were found for g1.
+##   11819 cells were found for g0.
+##   7 / 7 : group 1 ( 7 ) vs the rest...
+##   1448 cells were found for g1.
+##   12157 cells were found for g0.</code></pre>
+<div class="sourceCode" id="cb100"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb100-1"><a href="unsupervised-cell-type-annotation.html#cb100-1" tabindex="-1"></a><span class="fu">head</span>(de_res1)</span></code></pre></div>
+<pre><code>##  [1] feature g1_tag  g0_tag  g1_avg  g0_avg  g1_pct  g0_pct  log2FC  Pval   
+## [10] FDR     Zscore 
+## &lt;0 rows&gt; (or 0-length row.names)</code></pre>
+<p>Here is an brief introduction to the results of <code>getDE()</code>:</p>
+<ul>
+<li><strong>feature</strong>: feature name;</li>
+<li><strong>g1_tag</strong>: a vector of clusters or subgroups involved in g1, the fore-ground group;</li>
+<li><strong>g0_tag</strong>: a vector of clusters or subgroups involved in g0, the back-ground group;</li>
+<li><strong>g1_avg</strong>: mean of gene expression of cells in g1;</li>
+<li><strong>g0_tag</strong>: mean of gene expression of cells in g0;</li>
+<li><strong>g1_pct</strong>: percentage of cells expressing the corresponding genes in group 1;</li>
+<li><strong>g0_pct</strong>: percentage of cells expressing the corresponding genes in group 0;</li>
+<li><strong>log2FC</strong>: log2Fold change of gene expression between g1 and g0;</li>
+<li><strong>Pval</strong>: P values of g1-g0 comparison;</li>
+<li><strong>FDR</strong>: FDR of g1-g0 comparison;</li>
+<li><strong>Zscore</strong>: Z score of g1-g0 comparison, signed by <code>log2FC</code>;</li>
+</ul>
+<div class="sourceCode" id="cb102"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb102-1"><a href="unsupervised-cell-type-annotation.html#cb102-1" tabindex="-1"></a><span class="do">## 2. To perform differential expression analysis in a 1-vs-rest manner for one specific group</span></span>
+<span id="cb102-2"><a href="unsupervised-cell-type-annotation.html#cb102-2" tabindex="-1"></a>de_res2 <span class="ot">&lt;-</span> <span class="fu">getDE</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">group_by =</span> <span class="st">&quot;clusterID&quot;</span>, <span class="at">g1 =</span> <span class="fu">c</span>(<span class="st">&quot;1&quot;</span>), <span class="at">use_method =</span> <span class="st">&quot;limma&quot;</span>)</span>
+<span id="cb102-3"><a href="unsupervised-cell-type-annotation.html#cb102-3" tabindex="-1"></a></span>
+<span id="cb102-4"><a href="unsupervised-cell-type-annotation.html#cb102-4" tabindex="-1"></a><span class="do">## 3. To perform differential expression analysis in a rest-vs-1 manner for one specific group</span></span>
+<span id="cb102-5"><a href="unsupervised-cell-type-annotation.html#cb102-5" tabindex="-1"></a>de_res3 <span class="ot">&lt;-</span> <span class="fu">getDE</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">group_by =</span> <span class="st">&quot;clusterID&quot;</span>, <span class="at">g0 =</span> <span class="fu">c</span>(<span class="st">&quot;1&quot;</span>), <span class="at">use_method =</span> <span class="st">&quot;limma&quot;</span>)</span>
+<span id="cb102-6"><a href="unsupervised-cell-type-annotation.html#cb102-6" tabindex="-1"></a></span>
+<span id="cb102-7"><a href="unsupervised-cell-type-annotation.html#cb102-7" tabindex="-1"></a><span class="do">## 4. To perform differential expression analysis in a 1-vs-1 manner for any two groups</span></span>
+<span id="cb102-8"><a href="unsupervised-cell-type-annotation.html#cb102-8" tabindex="-1"></a>de_res4 <span class="ot">&lt;-</span> <span class="fu">getDE</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">group_by =</span> <span class="st">&quot;clusterID&quot;</span>, <span class="at">g1 =</span> <span class="fu">c</span>(<span class="st">&quot;1&quot;</span>), <span class="at">g0 =</span> <span class="fu">c</span>(<span class="st">&quot;3&quot;</span>), <span class="at">use_method =</span> <span class="st">&quot;limma&quot;</span>)</span></code></pre></div>
+<p>scMINER also provides a function, <code>getTopFeatures()</code>, to easily extract the group-specific markers from the differential expression result:</p>
+<div class="sourceCode" id="cb103"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb103-1"><a href="unsupervised-cell-type-annotation.html#cb103-1" tabindex="-1"></a>cluster_markers <span class="ot">&lt;-</span> <span class="fu">getTopFeatures</span>(<span class="at">input_table =</span> de_res1, <span class="at">number =</span> <span class="dv">10</span>, <span class="at">group_by =</span> <span class="st">&quot;g1_tag&quot;</span>, <span class="at">sort_by =</span> <span class="st">&quot;log2FC&quot;</span>, <span class="at">sort_decreasing =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb103-2"><a href="unsupervised-cell-type-annotation.html#cb103-2" tabindex="-1"></a><span class="fu">dim</span>(cluster_markers)</span></code></pre></div>
+<pre><code>## [1]  0 11</code></pre>
+<div class="sourceCode" id="cb105"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb105-1"><a href="unsupervised-cell-type-annotation.html#cb105-1" tabindex="-1"></a><span class="fu">head</span>(cluster_markers)</span></code></pre></div>
+<pre><code>##  [1] feature g1_tag  g0_tag  g1_avg  g0_avg  g1_pct  g0_pct  log2FC  Pval   
+## [10] FDR     Zscore 
+## &lt;0 rows&gt; (or 0-length row.names)</code></pre>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="filter-the-sparse-eset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="mi-based-clustering-analysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="supervised-cell-type-annotation.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="add-cell-type-annotations-to-sparseexpressionset-object.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -314,7 +352,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/06-data-normalization.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/08-celltype-annotation.Rmd",
 "text": "Edit"
 },
 "history": {

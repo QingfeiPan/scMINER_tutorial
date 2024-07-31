@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
+  <title>8.1 Supervised cell type annotation | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
   <meta name="description" content="A tutorial of scMINER" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta property="og:title" content="8.1 Supervised cell type annotation | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A tutorial of scMINER" />
   <meta name="github-repo" content="QingfeiPan/scMINER_qpan" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta name="twitter:title" content="8.1 Supervised cell type annotation | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   
   <meta name="twitter:description" content="A tutorial of scMINER" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="filter-the-sparse-eset-object.html"/>
-<link rel="next" href="mi-based-clustering-analysis.html"/>
+<link rel="prev" href="cell-type-annotation.html"/>
+<link rel="next" href="unsupervised-cell-type-annotation.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -251,39 +251,78 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="data-normalization" class="section level1 hasAnchor" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Data normalization<a href="data-normalization.html#data-normalization" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>In this chapter, we will introduce the method of data normalization in scMINER.</p>
-<p>We recommend to use <strong><code>log2CPM</code></strong> method for normalization: the raw counts in each cell are normalized to a library size of 1 million, followed by log2 transformation.</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="data-normalization.html#cb69-1" tabindex="-1"></a>pbmc14k_log2cpm.eset <span class="ot">&lt;-</span> <span class="fu">normalizeSparseEset</span>(pbmc14k_filtered.eset, <span class="at">scale_factor =</span> <span class="dv">1000000</span>, <span class="at">log_base =</span> <span class="dv">2</span>, <span class="at">log_pseudoCount =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## Done! The data matrix of eset has been normalized and log-transformed!
-## The returned eset contains: 8846 genes, 13605 cells.</code></pre>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="data-normalization.html#cb71-1" tabindex="-1"></a><span class="fu">exprs</span>(pbmc14k_log2cpm.eset)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
-<pre><code>## 5 x 5 Matrix of class &quot;dgeMatrix&quot;
-##           CACTTTGACGCAAT GTTACGGAAACGAA CACTTATGAGTCGT GCATGTGATTCTGT
-## LINC00115              0        0.00000              0              0
-## NOC2L                  0        0.00000              0              0
-## HES4                   0        0.00000              0              0
-## ISG15                  0       10.05794              0              0
-## C1orf159               0        0.00000              0              0
-##           TAGAATACGTATCG
-## LINC00115              0
-## NOC2L                  0
-## HES4                   0
-## ISG15                  0
-## C1orf159               0</code></pre>
-<p>This normalized and log-transformed SparseEset object can be directly used for Mutual Information-based clustering, network inference and other downstream analysis.</p>
-<p>Don’t forget to save the SparseEset object after data normalization.</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="data-normalization.html#cb73-1" tabindex="-1"></a><span class="fu">saveRDS</span>(pbmc14k_log2cpm.eset, <span class="at">file =</span> <span class="st">&quot;/your-path/PBMC14k/DATA/pbmc14k_log2CPM_annotated.rds&quot;</span>)</span></code></pre></div>
-
+<div id="supervised-cell-type-annotation" class="section level2 hasAnchor" number="8.1">
+<h2><span class="header-section-number">8.1</span> Supervised cell type annotation<a href="supervised-cell-type-annotation.html#supervised-cell-type-annotation" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>In the past a few years, the scRNA-seq data has dramatically increased in both quality and quantity. For the majority of tissue types, some existing studies on the same/similar tissue type are most likely available, and from these existing studies, we can figure out a list of candidate cell types to expect and curate a list of markers for each of them. In this case, we know the 7 cell types involved in the dataset, and curated a marker list from some existing PBMCs studies.</p>
+<div id="annotate-using-signature-scores" class="section level3 hasAnchor" number="8.1.1">
+<h3><span class="header-section-number">8.1.1</span> Annotate using signature scores<a href="supervised-cell-type-annotation.html#annotate-using-signature-scores" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Given a marker list of candidate cell types, scMINER can estimate a signature score, which is mathematically <code>the weighted mean of the expression of marker genes involved</code>, for each candidate cell type across all cell cluster. To do so, you will need to generate a signature table with three columns:</p>
+<ul>
+<li><code>signature_name</code>: name of cell types/signatures;</li>
+<li><code>signature_feature</code>: markers genes/features of corresponding cell type/signature;</li>
+<li><code>weight</code>: weight of corresponding maker/feature in corresponding cell type/signature. It ranges from -1 to 1, so both positive and negtive markers are supoorted.</li>
+</ul>
+<div class="sourceCode" id="cb88"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb88-1"><a href="supervised-cell-type-annotation.html#cb88-1" tabindex="-1"></a><span class="do">## Signature table of PBMC14k dataset</span></span>
+<span id="cb88-2"><a href="supervised-cell-type-annotation.html#cb88-2" tabindex="-1"></a>signature_table <span class="ot">&lt;-</span> <span class="fu">read.table</span>(<span class="fu">system.file</span>(<span class="st">&quot;extdata/demo_pbmc14k/PBMC14k_signatureTable.txt&quot;</span>, <span class="at">package =</span> <span class="st">&quot;scMINER&quot;</span>), <span class="at">header =</span> <span class="cn">TRUE</span>, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\t</span><span class="st">&quot;</span>, <span class="at">quote =</span> <span class="st">&quot;&quot;</span>, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb88-3"><a href="supervised-cell-type-annotation.html#cb88-3" tabindex="-1"></a><span class="fu">head</span>(signature_table)</span></code></pre></div>
+<pre><code>##   signature_name signature_feature weight
+## 1       Monocyte              CD14      1
+## 2       Monocyte               LYZ      1
+## 3       Monocyte            S100A8      1
+## 4       Monocyte            S100A9      1
+## 5       Monocyte           S100A12      1
+## 6             NK            FCGR3A      1</code></pre>
+<p>With this signature table, <code>draw_bubbleplot()</code> can estimate the signature scores and visualize them using bubble plot:</p>
+<div class="sourceCode" id="cb90"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb90-1"><a href="supervised-cell-type-annotation.html#cb90-1" tabindex="-1"></a><span class="do">## Violin plot of marker genes across clusters</span></span>
+<span id="cb90-2"><a href="supervised-cell-type-annotation.html#cb90-2" tabindex="-1"></a><span class="fu">draw_bubbleplot</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">signature_table =</span> signature_table, <span class="at">group_by =</span> <span class="st">&quot;clusterID&quot;</span>)</span></code></pre></div>
+<pre><code>## 31 features of 7 signatures were found in the input eset and will be used in calculation.</code></pre>
+<p><img src="_main_files/figure-html/signature-bubble-1.png" width="672" style="display: block; margin: auto;" />
+In the bubble plot above, the color of the bubbles is proportional to the mean of signature score, and the size of the bubbles is proportional to the percentage of cells with higher signature score than mean. The cell type of each cluster is clear, except the cluster 7, which shows equally-high signature score of both CD4+ TCM and CD4+ Reg and higher percentage of CD4+ TCM cells.</p>
+</div>
+<div id="annotate-using-individual-marker-genes" class="section level3 hasAnchor" number="8.1.2">
+<h3><span class="header-section-number">8.1.2</span> Annotate using individual marker genes<a href="supervised-cell-type-annotation.html#annotate-using-individual-marker-genes" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>scMINER also provides a variety of functions to visualize the selected features:</p>
+<div class="sourceCode" id="cb92"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb92-1"><a href="supervised-cell-type-annotation.html#cb92-1" tabindex="-1"></a><span class="do">## For the demonstration purposes, we picked two well known markers for each of the 7 known cell types, plus &quot;CD3D&quot; and &quot;CD4&quot;.</span></span>
+<span id="cb92-2"><a href="supervised-cell-type-annotation.html#cb92-2" tabindex="-1"></a>genes_of_interest <span class="ot">&lt;-</span><span class="fu">c</span>(<span class="st">&quot;CD14&quot;</span>, <span class="st">&quot;LYZ&quot;</span>, <span class="st">&quot;GZMB&quot;</span>, <span class="st">&quot;NKG7&quot;</span>, <span class="st">&quot;CD19&quot;</span>, <span class="st">&quot;MS4A1&quot;</span>, <span class="st">&quot;CD8A&quot;</span>, <span class="st">&quot;CD8B&quot;</span>, <span class="st">&quot;SELL&quot;</span>, <span class="st">&quot;CCR7&quot;</span>, <span class="st">&quot;IL2RA&quot;</span>, <span class="st">&quot;FOXP3&quot;</span>, <span class="st">&quot;IL7R&quot;</span>, <span class="st">&quot;S100A4&quot;</span>, <span class="st">&quot;CD3D&quot;</span>, <span class="st">&quot;CD4&quot;</span>)</span></code></pre></div>
+<div id="feature-visualization-violin-plot" class="section level4 hasAnchor" number="8.1.2.1">
+<h4><span class="header-section-number">8.1.2.1</span> feature visualization: violin plot<a href="supervised-cell-type-annotation.html#feature-visualization-violin-plot" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div class="sourceCode" id="cb93"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb93-1"><a href="supervised-cell-type-annotation.html#cb93-1" tabindex="-1"></a><span class="do">## Violin plot of marker genes across clusters</span></span>
+<span id="cb93-2"><a href="supervised-cell-type-annotation.html#cb93-2" tabindex="-1"></a><span class="fu">feature_vlnplot</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">features =</span> genes_of_interest, <span class="at">group_by =</span> <span class="st">&quot;clusterID&quot;</span>, <span class="at">ncol =</span> <span class="dv">4</span>)</span></code></pre></div>
+<p><img src="_main_files/figure-html/featurePlot-vln-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="feature-visualization-box-plot" class="section level4 hasAnchor" number="8.1.2.2">
+<h4><span class="header-section-number">8.1.2.2</span> feature visualization: box plot<a href="supervised-cell-type-annotation.html#feature-visualization-box-plot" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div class="sourceCode" id="cb94"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb94-1"><a href="supervised-cell-type-annotation.html#cb94-1" tabindex="-1"></a><span class="do">## Box plot of marker genes across clusters</span></span>
+<span id="cb94-2"><a href="supervised-cell-type-annotation.html#cb94-2" tabindex="-1"></a><span class="fu">feature_boxplot</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">features =</span> genes_of_interest, <span class="at">group_by =</span> <span class="st">&quot;clusterID&quot;</span>, <span class="at">ncol =</span> <span class="dv">4</span>)</span></code></pre></div>
+<p><img src="_main_files/figure-html/featurePlot-box-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="feature-visualization-scatter-plot" class="section level4 hasAnchor" number="8.1.2.3">
+<h4><span class="header-section-number">8.1.2.3</span> feature visualization: scatter plot<a href="supervised-cell-type-annotation.html#feature-visualization-scatter-plot" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div class="sourceCode" id="cb95"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb95-1"><a href="supervised-cell-type-annotation.html#cb95-1" tabindex="-1"></a><span class="do">## UMAP scatter plot of marker genes</span></span>
+<span id="cb95-2"><a href="supervised-cell-type-annotation.html#cb95-2" tabindex="-1"></a><span class="fu">feature_scatterplot</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">features =</span> genes_of_interest, <span class="at">ncol =</span> <span class="dv">4</span>, <span class="at">location_x =</span> <span class="st">&quot;UMAP_1&quot;</span>, <span class="at">location_y =</span>  <span class="st">&quot;UMAP_2&quot;</span>, <span class="at">point.size =</span> <span class="fl">0.5</span>, <span class="at">legend.key_height =</span> <span class="fl">0.3</span>, <span class="at">legend.key_width =</span> <span class="fl">0.2</span>, <span class="at">fontsize.legend_title =</span> <span class="dv">8</span>, <span class="at">fontsize.legend_text =</span> <span class="dv">6</span>, <span class="at">fontsize.axis_title =</span> <span class="dv">8</span>, <span class="at">legend.position =</span> <span class="st">&quot;none&quot;</span>)</span></code></pre></div>
+<p><img src="_main_files/figure-html/featurePlot-scatter-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="feature-visualization-bubble-plot" class="section level4 hasAnchor" number="8.1.2.4">
+<h4><span class="header-section-number">8.1.2.4</span> feature visualization: bubble plot<a href="supervised-cell-type-annotation.html#feature-visualization-bubble-plot" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div class="sourceCode" id="cb96"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb96-1"><a href="supervised-cell-type-annotation.html#cb96-1" tabindex="-1"></a><span class="do">## Bubble plot of marker genes across clusters</span></span>
+<span id="cb96-2"><a href="supervised-cell-type-annotation.html#cb96-2" tabindex="-1"></a><span class="fu">feature_bubbleplot</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">features =</span> genes_of_interest, <span class="at">group_by =</span> <span class="st">&quot;clusterID&quot;</span>, <span class="at">xlabel.angle =</span> <span class="dv">45</span>)</span></code></pre></div>
+<p><img src="_main_files/figure-html/featurePlot-bubble-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="feature-visualization-heatmap" class="section level4 hasAnchor" number="8.1.2.5">
+<h4><span class="header-section-number">8.1.2.5</span> feature visualization: heatmap<a href="supervised-cell-type-annotation.html#feature-visualization-heatmap" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div class="sourceCode" id="cb97"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb97-1"><a href="supervised-cell-type-annotation.html#cb97-1" tabindex="-1"></a><span class="do">## Heatmap of marker genes across clusters</span></span>
+<span id="cb97-2"><a href="supervised-cell-type-annotation.html#cb97-2" tabindex="-1"></a><span class="fu">feature_heatmap</span>(<span class="at">input_eset =</span> pbmc14k_log2cpm.eset, <span class="at">features =</span> genes_of_interest, <span class="at">group_by =</span> <span class="st">&quot;clusterID&quot;</span>, <span class="at">scale_method =</span> <span class="st">&quot;none&quot;</span>, <span class="at">annotation_columns =</span> <span class="fu">c</span>(<span class="st">&quot;trueLabel&quot;</span>))</span></code></pre></div>
+<p><img src="_main_files/figure-html/featurePlot-heatmap-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="filter-the-sparse-eset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="mi-based-clustering-analysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="cell-type-annotation.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="unsupervised-cell-type-annotation.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -314,7 +353,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/06-data-normalization.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/08-celltype-annotation.Rmd",
 "text": "Edit"
 },
 "history": {

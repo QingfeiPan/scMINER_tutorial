@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
+  <title>9.2 Run SJARACNe | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
   <meta name="description" content="A tutorial of scMINER" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta property="og:title" content="9.2 Run SJARACNe | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A tutorial of scMINER" />
   <meta name="github-repo" content="QingfeiPan/scMINER_qpan" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta name="twitter:title" content="9.2 Run SJARACNe | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   
   <meta name="twitter:description" content="A tutorial of scMINER" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="filter-the-sparse-eset-object.html"/>
-<link rel="next" href="mi-based-clustering-analysis.html"/>
+<link rel="prev" href="generate-sjaracne-input-files.html"/>
+<link rel="next" href="assess-the-quality-of-networks.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -251,39 +251,39 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="data-normalization" class="section level1 hasAnchor" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Data normalization<a href="data-normalization.html#data-normalization" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>In this chapter, we will introduce the method of data normalization in scMINER.</p>
-<p>We recommend to use <strong><code>log2CPM</code></strong> method for normalization: the raw counts in each cell are normalized to a library size of 1 million, followed by log2 transformation.</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="data-normalization.html#cb69-1" tabindex="-1"></a>pbmc14k_log2cpm.eset <span class="ot">&lt;-</span> <span class="fu">normalizeSparseEset</span>(pbmc14k_filtered.eset, <span class="at">scale_factor =</span> <span class="dv">1000000</span>, <span class="at">log_base =</span> <span class="dv">2</span>, <span class="at">log_pseudoCount =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## Done! The data matrix of eset has been normalized and log-transformed!
-## The returned eset contains: 8846 genes, 13605 cells.</code></pre>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="data-normalization.html#cb71-1" tabindex="-1"></a><span class="fu">exprs</span>(pbmc14k_log2cpm.eset)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
-<pre><code>## 5 x 5 Matrix of class &quot;dgeMatrix&quot;
-##           CACTTTGACGCAAT GTTACGGAAACGAA CACTTATGAGTCGT GCATGTGATTCTGT
-## LINC00115              0        0.00000              0              0
-## NOC2L                  0        0.00000              0              0
-## HES4                   0        0.00000              0              0
-## ISG15                  0       10.05794              0              0
-## C1orf159               0        0.00000              0              0
-##           TAGAATACGTATCG
-## LINC00115              0
-## NOC2L                  0
-## HES4                   0
-## ISG15                  0
-## C1orf159               0</code></pre>
-<p>This normalized and log-transformed SparseEset object can be directly used for Mutual Information-based clustering, network inference and other downstream analysis.</p>
-<p>Don’t forget to save the SparseEset object after data normalization.</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="data-normalization.html#cb73-1" tabindex="-1"></a><span class="fu">saveRDS</span>(pbmc14k_log2cpm.eset, <span class="at">file =</span> <span class="st">&quot;/your-path/PBMC14k/DATA/pbmc14k_log2CPM_annotated.rds&quot;</span>)</span></code></pre></div>
-
+<div id="run-sjaracne" class="section level2 hasAnchor" number="9.2">
+<h2><span class="header-section-number">9.2</span> Run SJARACNe<a href="run-sjaracne.html#run-sjaracne" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>By default, the <code>generateSJARACNeInput()</code> function also generates a <code>runSJARACNe.sh</code> file in the folder of each group. This file much be modified before you can run it:</p>
+<ul>
+<li><strong>removed unneeded lines</strong>: There are usually 4 lines in this file: the lines starting with “sjaracne lsf” are the command lines to run on IBM LSF cluster, while the lines starting with “sjaracne local” are the command lines runing on a single machine (Linux/OSX). Please select the lines based on your situation and remove the others.</li>
+<li><strong>-n</strong>: number of bootstrap networks to generate. Default: 100.</li>
+<li><strong>-pc</strong>: p value threshold to select edges in building consensus network. Default: e-2 for single-cell data, e-3 for meta-cell data, and e-5 for bulk sample data.
+Please use “sjaracne lsf -h” or “sjaracne local -h” to check more details of arguments available in SJARACNe.</li>
+</ul>
+<p>There is another file, <code>config_cwlexec.json</code>, available in the folder. It contains the information (e.g. memory request for each step of SJARACNe run) used for LSF job submission. This file is only needed for LSF runs and the default values works well in most cases. If you are running SJARACNe on a big dataset, you may need to request more memory from it.</p>
+<p>In this case, we use LSF to run the SJARACNe:</p>
+<div class="sourceCode" id="cb117"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb117-1"><a href="run-sjaracne.html#cb117-1" tabindex="-1"></a><span class="co">## let&#39;s use B cell as an example</span></span>
+<span id="cb117-2"><a href="run-sjaracne.html#cb117-2" tabindex="-1"></a><span class="co"># for TF</span></span>
+<span id="cb117-3"><a href="run-sjaracne.html#cb117-3" tabindex="-1"></a><span class="ex">sjaracne</span> lsf <span class="at">-e</span> /work-path/PBMC14k/SJARACNe/B/B.8572_1902.exp.txt <span class="at">-g</span> /work-path/PBMC14k/SJARACNe/B/TF/B.835_1902.tf.txt <span class="at">-o</span> /work-path/PBMC14k/SJARACNe/B/TF/bt100_pc001 <span class="at">-n</span> 100 <span class="at">-pc</span> 0.01 <span class="at">-j</span> /work-path/PBMC14k/SJARACNe/B/config_cwlexec.json</span>
+<span id="cb117-4"><a href="run-sjaracne.html#cb117-4" tabindex="-1"></a></span>
+<span id="cb117-5"><a href="run-sjaracne.html#cb117-5" tabindex="-1"></a><span class="co"># for SIG</span></span>
+<span id="cb117-6"><a href="run-sjaracne.html#cb117-6" tabindex="-1"></a><span class="ex">sjaracne</span> lsf <span class="at">-e</span> /work-path/PBMC14k/SJARACNe/B/B.8572_1902.exp.txt <span class="at">-g</span> /work-path/PBMC14k/SJARACNe/B/SIG/B.4148_1902.sig.txt <span class="at">-o</span> /work-path/PBMC14k/SJARACNe/B/SIG/bt100_pc001 <span class="at">-n</span> 100 <span class="at">-pc</span> 0.01 <span class="at">-j</span> /work-path/PBMC14k/SJARACNe/B/config_cwlexec.json</span></code></pre></div>
+<p>We created a folder named “<strong>bt100_pc001</strong>” in both TF and SIG folders of each group, to save the networks generated under <strong>100 bootstraps</strong> (<code>-n 100</code>) and <strong>0.01 consensus p value</strong> (<code>-pc 0.01</code>).</p>
+<p>To run SJARACNe on a local machine:</p>
+<div class="sourceCode" id="cb118"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb118-1"><a href="run-sjaracne.html#cb118-1" tabindex="-1"></a><span class="co">## let&#39;s use B cell as an example</span></span>
+<span id="cb118-2"><a href="run-sjaracne.html#cb118-2" tabindex="-1"></a><span class="co"># for TF</span></span>
+<span id="cb118-3"><a href="run-sjaracne.html#cb118-3" tabindex="-1"></a><span class="ex">sjaracne</span> local <span class="at">-e</span> /work-path/PBMC14k/SJARACNe/B/B.8572_1902.exp.txt <span class="at">-g</span> /work-path/PBMC14k/SJARACNe/B/TF/B.835_1902.tf.txt <span class="at">-o</span> /work-path/PBMC14k/SJARACNe/B/TF/bt100_pc001 <span class="at">-n</span> 100 <span class="at">-pc</span> 0.01</span>
+<span id="cb118-4"><a href="run-sjaracne.html#cb118-4" tabindex="-1"></a></span>
+<span id="cb118-5"><a href="run-sjaracne.html#cb118-5" tabindex="-1"></a><span class="co"># for SIG</span></span>
+<span id="cb118-6"><a href="run-sjaracne.html#cb118-6" tabindex="-1"></a><span class="ex">sjaracne</span> local <span class="at">-e</span> /work-path/PBMC14k/SJARACNe/B/B.8572_1902.exp.txt <span class="at">-g</span> /work-path/PBMC14k/SJARACNe/B/SIG/B.4148_1902.sig.txt <span class="at">-o</span> /work-path/PBMC14k/SJARACNe/B/SIG/bt100_pc001 <span class="at">-n</span> 100 <span class="at">-pc</span> 0.01</span></code></pre></div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="filter-the-sparse-eset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="mi-based-clustering-analysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="generate-sjaracne-input-files.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="assess-the-quality-of-networks.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -314,7 +314,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/06-data-normalization.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/09-network-inference.Rmd",
 "text": "Edit"
 },
 "history": {

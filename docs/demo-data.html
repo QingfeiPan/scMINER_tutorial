@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
+  <title>2.2 Demo data | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data</title>
   <meta name="description" content="A tutorial of scMINER" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta property="og:title" content="2.2 Demo data | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A tutorial of scMINER" />
   <meta name="github-repo" content="QingfeiPan/scMINER_qpan" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Data normalization | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
+  <meta name="twitter:title" content="2.2 Demo data | scMINER: a mutual information-based framework for identifying hidden drivers from single-cell omics data" />
   
   <meta name="twitter:description" content="A tutorial of scMINER" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="filter-the-sparse-eset-object.html"/>
-<link rel="next" href="mi-based-clustering-analysis.html"/>
+<link rel="prev" href="installation.html"/>
+<link rel="next" href="create-project-space.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -251,39 +251,78 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="data-normalization" class="section level1 hasAnchor" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Data normalization<a href="data-normalization.html#data-normalization" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>In this chapter, we will introduce the method of data normalization in scMINER.</p>
-<p>We recommend to use <strong><code>log2CPM</code></strong> method for normalization: the raw counts in each cell are normalized to a library size of 1 million, followed by log2 transformation.</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="data-normalization.html#cb69-1" tabindex="-1"></a>pbmc14k_log2cpm.eset <span class="ot">&lt;-</span> <span class="fu">normalizeSparseEset</span>(pbmc14k_filtered.eset, <span class="at">scale_factor =</span> <span class="dv">1000000</span>, <span class="at">log_base =</span> <span class="dv">2</span>, <span class="at">log_pseudoCount =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## Done! The data matrix of eset has been normalized and log-transformed!
-## The returned eset contains: 8846 genes, 13605 cells.</code></pre>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="data-normalization.html#cb71-1" tabindex="-1"></a><span class="fu">exprs</span>(pbmc14k_log2cpm.eset)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
-<pre><code>## 5 x 5 Matrix of class &quot;dgeMatrix&quot;
-##           CACTTTGACGCAAT GTTACGGAAACGAA CACTTATGAGTCGT GCATGTGATTCTGT
-## LINC00115              0        0.00000              0              0
-## NOC2L                  0        0.00000              0              0
-## HES4                   0        0.00000              0              0
-## ISG15                  0       10.05794              0              0
-## C1orf159               0        0.00000              0              0
-##           TAGAATACGTATCG
-## LINC00115              0
-## NOC2L                  0
-## HES4                   0
-## ISG15                  0
-## C1orf159               0</code></pre>
-<p>This normalized and log-transformed SparseEset object can be directly used for Mutual Information-based clustering, network inference and other downstream analysis.</p>
-<p>Don’t forget to save the SparseEset object after data normalization.</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="data-normalization.html#cb73-1" tabindex="-1"></a><span class="fu">saveRDS</span>(pbmc14k_log2cpm.eset, <span class="at">file =</span> <span class="st">&quot;/your-path/PBMC14k/DATA/pbmc14k_log2CPM_annotated.rds&quot;</span>)</span></code></pre></div>
-
+<div id="demo-data" class="section level2 hasAnchor" number="2.2">
+<h2><span class="header-section-number">2.2</span> Demo data<a href="demo-data.html#demo-data" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>In this tutorial, we will use a <strong><em>ground truth</em></strong> dataset called <strong>PBMC14k</strong> for demonstration purposes. It was generated from a Peripheral Blood Mononuclear Cells (PBMCs) dataset containing 10 known cell types, with 2,000 cells per type [<a href="./data-reference.md#%5BZheng%20et%20al.,%202017%5D">Zheng et al., 2017</a>]:</p>
+<ol style="list-style-type: decimal">
+<li>We first rectified the gene symbol issues of the original dataset, including the dash-dot conversion (e.g. “RP11-34P13.7” changed to “RP11.34P13.7”) and “X” added to those started with numbers (e.g. “7SK” changed to “X7SK”), by referring to the gene annotation file (GRCh37.82) used in the original study.</li>
+<li>Then we removed 3 cell populations, CD34+ cells, CD4+ helper T cells, and total CD8+ cytotoxic cells, from the dataset because of either low sorting purity or a significant overlap with other immune cells based on the sorting strategy, and created a new dataset with seven known cell types and 14k cells in total.</li>
+</ol>
+<p>The original dataset is freely available under this accession number <a href="https://www.ncbi.nlm.nih.gov/sra?term=SRP073767">SRP073767</a> and <a href="https://zenodo.org/record/3357167#.YhQNF2RKj6V">Zenodo</a>.</p>
+<details>
+<summary>
+<strong>How was the PBMC14K dataset generated from the original dataset?</strong>
+</summary>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="demo-data.html#cb3-1" tabindex="-1"></a><span class="do">## Step 1: rectify the invalid gene symbols</span></span>
+<span id="cb3-2"><a href="demo-data.html#cb3-2" tabindex="-1"></a><span class="co"># &quot;Filtered_DownSampled_SortedPBMC_data.csv&quot; is the raw count matrix directly downloaded from Zenodo</span></span>
+<span id="cb3-3"><a href="demo-data.html#cb3-3" tabindex="-1"></a>counts <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;Filtered_DownSampled_SortedPBMC_data.csv&quot;</span>, <span class="at">row.names =</span> <span class="dv">1</span>) </span>
+<span id="cb3-4"><a href="demo-data.html#cb3-4" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">t</span>(counts); <span class="fu">dim</span>(d) <span class="co"># it includes 21592 genes and 20000 cells</span></span>
+<span id="cb3-5"><a href="demo-data.html#cb3-5" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="demo-data.html#cb3-6" tabindex="-1"></a><span class="co"># &quot;genesymbol_from_GTF_GRCh37.txt&quot; contains the official gene ids and symbols extracted from GTF file downloaded from</span></span>
+<span id="cb3-7"><a href="demo-data.html#cb3-7" tabindex="-1"></a>officialGene <span class="ot">&lt;-</span> <span class="fu">read.table</span>(<span class="st">&quot;genesymbol_from_GTF_GRCh37.txt&quot;</span>, <span class="at">header =</span> T, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\t</span><span class="st">&quot;</span>, <span class="at">quote =</span> <span class="st">&quot;&quot;</span>, <span class="at">stringsAsFactors =</span> F); <span class="fu">head</span>(officialGene)  https<span class="sc">:</span><span class="er">//</span>ftp.ensembl.org<span class="sc">/</span>pub<span class="sc">/</span>grch37<span class="sc">/</span>current<span class="sc">/</span>gtf<span class="sc">/</span>homo_sapiens<span class="sc">/</span></span>
+<span id="cb3-8"><a href="demo-data.html#cb3-8" tabindex="-1"></a>officialGene<span class="sc">$</span>dotted_symbol <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&quot;-&quot;</span>, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.&quot;</span>, officialGene<span class="sc">$</span>gene_name); officialGene<span class="sc">$</span>dotted_symbol <span class="ot">&lt;-</span> <span class="fu">make.unique</span>(officialGene<span class="sc">$</span>dotted_symbol)</span>
+<span id="cb3-9"><a href="demo-data.html#cb3-9" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">row.names</span>(d) <span class="sc">%in%</span> officialGene<span class="sc">$</span>dotted_symbol); <span class="fu">row.names</span>(d)[<span class="sc">!</span> <span class="fu">row.names</span>(d) <span class="sc">%in%</span> officialGene<span class="sc">$</span>dotted_symbol] <span class="co"># two genes are not in: X7SK.1 and X7SK.2</span></span>
+<span id="cb3-10"><a href="demo-data.html#cb3-10" tabindex="-1"></a><span class="fu">row.names</span>(d) <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&quot;X7SK.1&quot;</span>, <span class="st">&quot;7SK&quot;</span>, <span class="fu">row.names</span>(d)); <span class="fu">row.names</span>(d) <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&quot;X7SK.2&quot;</span>, <span class="st">&quot;7SK.1&quot;</span>, <span class="fu">row.names</span>(d))</span>
+<span id="cb3-11"><a href="demo-data.html#cb3-11" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">row.names</span>(d) <span class="sc">%in%</span> officialGene<span class="sc">$</span>dotted_symbol) <span class="co"># all true</span></span>
+<span id="cb3-12"><a href="demo-data.html#cb3-12" tabindex="-1"></a><span class="fu">row.names</span>(officialGene) <span class="ot">&lt;-</span> officialGene<span class="sc">$</span>dotted_symbol</span>
+<span id="cb3-13"><a href="demo-data.html#cb3-13" tabindex="-1"></a>officialGene <span class="ot">&lt;-</span> officialGene[<span class="fu">row.names</span>(d),]</span>
+<span id="cb3-14"><a href="demo-data.html#cb3-14" tabindex="-1"></a><span class="fu">row.names</span>(d) <span class="ot">&lt;-</span> <span class="fu">make.unique</span>(officialGene<span class="sc">$</span>gene_name)</span>
+<span id="cb3-15"><a href="demo-data.html#cb3-15" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="demo-data.html#cb3-16" tabindex="-1"></a><span class="co"># &quot;Labels.csv&quot; contains the true labels of cell types and was directly downloaded from Zenodo</span></span>
+<span id="cb3-17"><a href="demo-data.html#cb3-17" tabindex="-1"></a>celltype <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;Labels.csv&quot;</span>); <span class="fu">head</span>(celltype); </span>
+<span id="cb3-18"><a href="demo-data.html#cb3-18" tabindex="-1"></a><span class="fu">table</span>(celltype<span class="sc">$</span>x) <span class="co"># 2000 cells for each of 10 cell types: CD14+ Monocyte, CD19+ B, CD34+, CD4+ T Helper2, CD4+/CD25 T Reg, CD4+/CD45RA+/CD25- Naive T, CD4+/CD45RO+ Memory, CD56+ NK, CD8+ Cytotoxic T, CD8+/CD45RA+ Naive Cytotoxic</span></span>
+<span id="cb3-19"><a href="demo-data.html#cb3-19" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">cell_barcode =</span> <span class="fu">colnames</span>(d), <span class="at">trueLabel_full =</span> celltype<span class="sc">$</span>x); <span class="fu">dim</span>(df)</span>
+<span id="cb3-20"><a href="demo-data.html#cb3-20" tabindex="-1"></a>truelabel_map <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">`</span><span class="at">CD14+ Monocyte</span><span class="st">`</span><span class="ot">=</span><span class="st">&quot;Monocyte&quot;</span>, <span class="st">`</span><span class="at">CD19+ B</span><span class="st">`</span><span class="ot">=</span><span class="st">&quot;B&quot;</span>, <span class="st">`</span><span class="at">CD34+</span><span class="st">`</span><span class="ot">=</span><span class="st">&quot;CD34pos&quot;</span>, <span class="st">`</span><span class="at">CD4+ T Helper2</span><span class="st">`</span><span class="ot">=</span><span class="st">&quot;CD4Th2&quot;</span>, <span class="st">`</span><span class="at">CD4+/CD25 T Reg</span><span class="st">`</span><span class="ot">=</span><span class="st">&quot;CD4Treg&quot;</span>,</span>
+<span id="cb3-21"><a href="demo-data.html#cb3-21" tabindex="-1"></a>                  <span class="st">`</span><span class="at">CD4+/CD45RA+/CD25- Naive T</span><span class="st">`</span><span class="ot">=</span><span class="st">&quot;CD4TN&quot;</span>, <span class="st">`</span><span class="at">CD4+/CD45RO+ Memory</span><span class="st">`</span><span class="ot">=</span><span class="st">&quot;CD4TCM&quot;</span>, <span class="st">`</span><span class="at">CD56+ NK</span><span class="st">`</span><span class="ot">=</span><span class="st">&quot;NK&quot;</span>, <span class="st">`</span><span class="at">CD8+ Cytotoxic T</span><span class="st">`</span><span class="ot">=</span><span class="st">&quot;CD8CTL&quot;</span>, <span class="st">`</span><span class="at">CD8+/CD45RA+ Naive Cytotoxic</span><span class="st">`</span><span class="ot">=</span><span class="st">&quot;CD8TN&quot;</span>)</span>
+<span id="cb3-22"><a href="demo-data.html#cb3-22" tabindex="-1"></a>df<span class="sc">$</span>trueLabel <span class="ot">&lt;-</span> <span class="fu">as.character</span>(truelabel_map[df<span class="sc">$</span>trueLabel_full])</span>
+<span id="cb3-23"><a href="demo-data.html#cb3-23" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="demo-data.html#cb3-24" tabindex="-1"></a><span class="do">## Step 2: extract 7 populations</span></span>
+<span id="cb3-25"><a href="demo-data.html#cb3-25" tabindex="-1"></a>df<span class="fl">.14</span>k <span class="ot">&lt;-</span> df[df<span class="sc">$</span>trueLabel_full <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;CD14+ Monocyte&quot;</span>, <span class="st">&quot;CD19+ B&quot;</span>, <span class="st">&quot;CD4+/CD25 T Reg&quot;</span>, <span class="st">&quot;CD4+/CD45RA+/CD25- Naive T&quot;</span>, <span class="st">&quot;CD4+/CD45RO+ Memory&quot;</span>, <span class="st">&quot;CD56+ NK&quot;</span>, <span class="st">&quot;CD8+/CD45RA+ Naive Cytotoxic&quot;</span>),]</span>
+<span id="cb3-26"><a href="demo-data.html#cb3-26" tabindex="-1"></a><span class="fu">write.table</span>(df<span class="fl">.14</span>k, <span class="at">file =</span> <span class="st">&quot;PBMC14k_trueLabel.txt&quot;</span>, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\t</span><span class="st">&quot;</span>, <span class="at">row.names =</span> <span class="cn">TRUE</span>, <span class="at">col.names =</span> <span class="cn">TRUE</span>, <span class="at">quote =</span> <span class="cn">FALSE</span>, <span class="at">append =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-27"><a href="demo-data.html#cb3-27" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="demo-data.html#cb3-28" tabindex="-1"></a>d<span class="fl">.14</span>k <span class="ot">&lt;-</span> d[,df<span class="fl">.14</span>k<span class="sc">$</span>cell_barcode]</span>
+<span id="cb3-29"><a href="demo-data.html#cb3-29" tabindex="-1"></a>d<span class="fl">.14</span>k <span class="ot">&lt;-</span> d<span class="fl">.14</span>k[<span class="fu">rowSums</span>(d<span class="fl">.14</span>k) <span class="sc">&gt;</span> <span class="dv">0</span>,]</span>
+<span id="cb3-30"><a href="demo-data.html#cb3-30" tabindex="-1"></a><span class="fu">write.table</span>(d<span class="fl">.14</span>k, <span class="at">file =</span> <span class="st">&quot;PBMC14k_rawCount.txt&quot;</span>, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\t</span><span class="st">&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>, <span class="at">col.names =</span> <span class="cn">TRUE</span>, <span class="at">quote =</span> <span class="cn">FALSE</span>, <span class="at">append =</span> <span class="cn">FALSE</span>) <span class="co"># 17986 genes, 14000 cells</span></span></code></pre></div>
+</details>
+<p><br />
+</p>
+<p>The <strong>PBMC14k</strong> dataset is embeded in scMINER R package and can be easily loaded by:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="demo-data.html#cb4-1" tabindex="-1"></a><span class="fu">library</span>(scMINER)</span>
+<span id="cb4-2"><a href="demo-data.html#cb4-2" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;pbmc14k_rawCount&quot;</span>)</span>
+<span id="cb4-3"><a href="demo-data.html#cb4-3" tabindex="-1"></a><span class="fu">dim</span>(pbmc14k_rawCount)</span></code></pre></div>
+<pre><code>## [1] 17986 14000</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="demo-data.html#cb6-1" tabindex="-1"></a>pbmc14k_rawCount[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
+<pre><code>## 5 x 5 sparse Matrix of class &quot;dgCMatrix&quot;
+##               CACTTTGACGCAAT GTTACGGAAACGAA AGTCACGACAGGAG TTCGAGGACCAGTA
+## AL627309.1                 .              .              .              .
+## AP006222.2                 .              .              .              .
+## RP11-206L10.3              .              .              .              .
+## RP11-206L10.2              .              .              .              .
+## RP11-206L10.9              .              .              .              .
+##               CACTTATGAGTCGT
+## AL627309.1                 .
+## AP006222.2                 .
+## RP11-206L10.3              .
+## RP11-206L10.2              .
+## RP11-206L10.9              .</code></pre>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="filter-the-sparse-eset-object.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="mi-based-clustering-analysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="installation.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="create-project-space.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -314,7 +353,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/06-data-normalization.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/02-get-started.Rmd",
 "text": "Edit"
 },
 "history": {
